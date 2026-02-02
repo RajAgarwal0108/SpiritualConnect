@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+}
+
+@theme {
+  --color-sacred-gold: #D9A05B;
+  --color-sacred-gold-dark: #C18841;
+  --color-sacred-beige: #F9F7F2;
+  --color-sacred-muted: #8E8675;
+  --color-sacred-border: #E9E4DB;
+  --color-sacred-text: #5C5445;
+  
+  --font-serif: var(--font-sacred-serif), serif;
+  --font-sans: var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  
+  --radius-4xl: 2.5rem;
+  --spacing-105: 26.25rem;
+}
+
+body {
+  background-color: var(--color-sacred-beige);
+  color: var(--color-sacred-text);
+  font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apple-style Elegant Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(217, 160, 91, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(217, 160, 91, 0.4);
+}
+
+.scrollbar-elegant::-webkit-scrollbar {
+  width: 4px;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(217, 160, 91, 0.1);
+}
