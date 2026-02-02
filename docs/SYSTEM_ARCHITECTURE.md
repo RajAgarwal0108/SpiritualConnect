@@ -25,17 +25,17 @@
 
 ```mermaid
 graph TD
-    User[Seeker] -->|HTTPS/WSS| LB[Load Balancer / Nginx]
-    LB -->|Next.js App| Frontend[Frontend Container]
-    Frontend -->|API Calls / Socket| Backend[Backend Service (Bun)]
+    User[Seeker] -->|HTTPS/WSS| LB["Load Balancer / Nginx"]
+    LB -->|Next.js App| Frontend["Frontend Container"]
+    Frontend -->|"API Calls / Socket"| Backend["Backend Service (Bun)"]
     
-    subgraph "Data Layer"
-        Backend -->|Prisma| DB[(PostgreSQL)]
-        Backend -->|File System| Storage[Uploads / S3]
+    subgraph DataLayer ["Data Layer"]
+        Backend -->|Prisma| DB[("PostgreSQL")]
+        Backend -->|"File System"| Storage["Uploads / S3"]
     end
     
-    subgraph "External Services"
-        Backend -->|REST| AI[Google Gemini API]
+    subgraph ExternalServices ["External Services"]
+        Backend -->|REST| AI["Google Gemini API"]
     end
 ```
 
