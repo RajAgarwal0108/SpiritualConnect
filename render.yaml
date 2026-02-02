@@ -1,0 +1,48 @@
+# Render manifest template for SpiritualConnect
+# NOTE: This file intentionally does NOT contain any secret values.
+# After adding this file, create the required secrets in the Render dashboard
+# (or via the Render API) and map them to the services.
+
+services:
+  # Backend service (Docker)
+  - name: spiritualconnect-backend
+    type: web_service
+    env: docker
+    repo: https://github.com/RajAgarwal0108/SpiritualConnect
+    branch: main
+    rootDir: backend
+    dockerfilePath: backend/Dockerfile
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "3001"
+
+  # Frontend service (Docker)
+  - name: spiritualconnect-frontend
+    type: web_service
+    env: docker
+    repo: https://github.com/RajAgarwal0108/SpiritualConnect
+    branch: main
+    rootDir: frontend
+    dockerfilePath: frontend/Dockerfile
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: NEXT_PUBLIC_API_URL
+        value: "https://<backend-service>.onrender.com/api"
+
+# After committing this manifest:
+# 1) Go to Render dashboard -> New -> Services -> Import from Repository and select this repo.
+# 2) Render will read this manifest and create the two services (you still need to configure secrets).
+# 3) Add the following secrets via Render dashboard (Settings -> Environment):
+#    - DATABASE_URL
+#    - JWT_SECRET
+#    - GEMINI_API_KEY
+#    - GOOGLE_CLIENT_ID
+#    - GOOGLE_CLIENT_SECRET
+#    - STORAGE_TYPE
+#    - Any other envs defined in backend/.env
+# 4) Once secrets are configured, trigger a deploy and the services will build from their Dockerfiles.
