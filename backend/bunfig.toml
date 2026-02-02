@@ -1,0 +1,10 @@
+[test]
+# Test preload files
+preload = ["./test-setup.ts"]
+
+# Coverage settings
+coverage = true
+coverageThreshold = 0.8
+
+# Test timeout
+timeout = 10000

@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int                   @id @default(autoincrement())
+  email         String                @unique
+  password      String
+  name          String
+  role          Role                  @default(USER)
+  isPrivate     Boolean               @default(false)
+  deactivatedAt DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  blogs         Blog[]
+  blogComments  BlogComment[]
+  bookmarks     Bookmark[]
+  comments      Comment[]
+  communities   CommunityMembership[]
+  enrollments   CourseEnrollment[]
+  following     Follow[]              @relation("following")
+  followers     Follow[]              @relation("followers")
+  likes         Like[]
+  posts         Post[]
+  profile       Profile?
+  reportsMade   Report[]              @relation("reporter")
+}
+
+model Profile {
+  id          Int      @id @default(autoincrement())
+  bio         String?
+  avatar      String?
+  avatarType  String?  @default("custom")
+  socialLinks Json?
+  interests   String[]
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  createdAt   DateTime @default(now())
+  follower    User     @relation("following", fields: [followerId], references: [id])
+  following   User     @relation("followers", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model Post {
+  id          Int        @id @default(autoincrement())
+  content     String
+  media       String?
+  status      String     @default("PUBLISHED")
+  views       Int        @default(0)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  authorId    Int
+  communityId Int
+  bookmarks   Bookmark[]
+  comments    Comment[]
+  likes       Like[]
+  author      User       @relation(fields: [authorId], references: [id])
+  community   Community  @relation(fields: [communityId], references: [id])
+}
+
+model Community {
+  id          Int                   @id @default(autoincrement())
+  name        String                @unique
+  description String
+  memberCount Int                   @default(0)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  members     CommunityMembership[]
+  posts       Post[]
+}
+
+model CommunityMembership {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  communityId Int
+  role        String    @default("MEMBER")
+  joinedAt    DateTime  @default(now())
+  community   Community @relation(fields: [communityId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, communityId])
+}
+
+model Blog {
+  id          Int           @id @default(autoincrement())
+  title       String
+  excerpt     String
+  content     String
+  category    String
+  readTime    String
+  coverImage  String?
+  authorId    Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  author      User          @relation(fields: [authorId], references: [id])
+  comments    BlogComment[]
+}
+
+model BlogComment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  blogId    Int
+  authorId  Int
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Course {
+  id          Int                @id @default(autoincrement())
+  title       String
+  description String
+  instructor  String
+  price       String             @default("Free")
+  duration    String
+  rating      Float              @default(5.0)
+  thumbnail   String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  enrollments CourseEnrollment[]
+  modules     Module[]
+}
+
+model Module {
+  id       Int      @id @default(autoincrement())
+  title    String
+  order    Int
+  courseId Int
+  lessons  Lesson[]
+  course   Course   @relation(fields: [courseId], references: [id])
+}
+
+model Lesson {
+  id       Int     @id @default(autoincrement())
+  title    String
+  content  String?
+  videoUrl String?
+  duration String?
+  order    Int
+  moduleId Int
+  module   Module  @relation(fields: [moduleId], references: [id])
+}
+
+model CourseEnrollment {
+  id       Int      @id @default(autoincrement())
+  userId   Int
+  courseId Int
+  joinedAt DateTime @default(now())
+  progress Float    @default(0.0)
+  course   Course   @relation(fields: [courseId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  postId    Int
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  postId    Int
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  content   String
+  createdAt DateTime  @default(now())
+  postId    Int
+  authorId  Int
+  parentId  Int?
+  author    User      @relation(fields: [authorId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  post      Post      @relation(fields: [postId], references: [id])
+}
+
+model Report {
+  id         Int      @id @default(autoincrement())
+  reason     String
+  targetType String
+  targetId   Int
+  reporterId Int
+  createdAt  DateTime @default(now())
+  status     String   @default("PENDING")
+  reporter   User     @relation("reporter", fields: [reporterId], references: [id])
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  room       String
+  senderId   Int
+  senderName String
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}

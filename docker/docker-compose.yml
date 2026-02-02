@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: spiritual-connect-db
+    restart: always
+    environment:
+      POSTGRES_USER: spiritual_user
+      POSTGRES_PASSWORD: spiritual_password
+      POSTGRES_DB: spiritual_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: spiritual-connect-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://spiritual_user:spiritual_password@db:5432/spiritual_db?schema=public
+      - JWT_SECRET=your_super_secret_jwt_key
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
