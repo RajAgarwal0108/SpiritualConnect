@@ -96,6 +96,12 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
+// Root route — redirect to health or return a small welcome payload so the
+// deployed service doesn't return 404 for `/`.
+app.get("/", (req, res) => {
+  res.redirect(302, "/api/health");
+});
+
 // File Upload Endpoint
 app.post("/api/upload", upload.single("file"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
