@@ -64,11 +64,15 @@ function ChatContent() {
     .filter((u: User) => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:3001");
+    socketRef.current = io("https://spiritualconnect.onrender.com", {
+      transports: ["websocket"],
+    });
     return () => {
       socketRef.current?.disconnect();
     };
   }, []);
+
+  
 
   useEffect(() => {
     // When a conversation is selected, join its room and load history
