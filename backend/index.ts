@@ -47,7 +47,7 @@ const corsOptions: cors.CorsOptions = {
 
 // Apply CORS early so preflight requests are answered correctly
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.options("/*", cors(corsOptions));
 
 // Logging
 app.use(morgan("dev"));
