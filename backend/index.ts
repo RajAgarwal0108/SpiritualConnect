@@ -26,7 +26,7 @@ const httpServer = createServer(app);
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "https://your-frontend.onrender.com",
+  "https://spiritualconnect-frontend.onrender.com",
 ];
 
 const corsOptions: cors.CorsOptions = {
