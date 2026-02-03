@@ -8,9 +8,10 @@ RUN bun install
 COPY . .
 
 # Generate Prisma client at build time
-RUN bunx prisma generate
+ENV PRISMA_CLIENT_ENGINE_TYPE=binary
+RUN bun run generate
 
 EXPOSE 3001
 
-# Start the application using the start script that ensures prisma generate runs at start too
-CMD ["bun", "run", "start"]
+# Start the application. We run generate again at start to be absolutely sure.
+CMD ["sh", "-c", "PRISMA_CLIENT_ENGINE_TYPE=binary bun run generate && bun run index.ts"]
