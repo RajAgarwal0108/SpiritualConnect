@@ -5,8 +5,10 @@ WORKDIR /app
 # Set Prisma engine BEFORE install/generate
 ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 
-# Copy only dependency-related files first
-COPY package.json bun.lock prisma ./
+# Copy only dependency-related files first. Copy prisma explicitly to ensure
+# the schema is present for the postinstall / prisma generate step.
+COPY package.json bun.lock ./
+COPY prisma ./prisma
 
 # Install deps + generate Prisma client
 RUN bun install
