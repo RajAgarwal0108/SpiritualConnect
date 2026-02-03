@@ -1,12 +1,15 @@
 import axios from "axios";
 import { useAuthStore } from "../store/globalStore";
 
-// Prefer build-time NEXT_PUBLIC_API_URL. If that's missing, and we're in the
-// browser, fallback to the frontend origin + /api so client requests target the
-// same host that served the frontend (works with reverse proxies / same-domain
-// deployments). Otherwise fall back to localhost for local development.
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+// Prefer build-time NEXT_PUBLIC_API_URL. If that's missing, choose a sensible
+// fallback: use localhost for local dev, otherwise default to the deployed
+// backend host (HTTPS) so we don't trigger mixed-content errors when the
+// frontend is served over HTTPS.
+const DEFAULT_HOST =
+  typeof window !== "undefined" && window.location.hostname === "localhost"
+    ? "http://localhost:3001"
+    : "https://spiritualconnect.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || `${DEFAULT_HOST}/api`;
 
 const api = axios.create({
   baseURL: API_URL,

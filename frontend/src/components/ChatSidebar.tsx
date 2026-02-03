@@ -98,7 +98,15 @@ export default function ChatSidebar() {
     .filter((u: User) => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   useEffect(() => {
-    const socket = io("http://localhost:3001");
+    // Choose socket host: use NEXT_PUBLIC_API_URL when available, keep
+    // localhost for local dev, otherwise default to deployed socket host.
+    const socketHost = (() => {
+      if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, "");
+      if (typeof window !== "undefined" && window.location.hostname === "localhost") return "http://localhost:3001";
+      return "https://spiritualconnect.onrender.com";
+    })();
+
+    const socket = io(socketHost);
     socketRef.current = socket;
 
     if (user) {
