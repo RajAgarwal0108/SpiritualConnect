@@ -1,20 +1,20 @@
 # Frontend Dockerfile for Next.js (used by Render)
-FROM node:20-alpine
+FROM oven/bun:latest
 
 WORKDIR /app
 
 # Install dependencies
-COPY package.json package-lock.json* ./
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+COPY package.json bun.lock* ./
+RUN bun install
 
 # Copy source
 COPY . ./
 
 # Build the Next.js app
-RUN npm run build
+RUN bun run build
 
 EXPOSE 3000
 ENV PORT=3000
 
 # Start using the PORT provided by the platform
-CMD ["sh", "-c", "npm run start -- -p $PORT"]
+CMD ["sh", "-c", "bun run start -- -p $PORT"]
