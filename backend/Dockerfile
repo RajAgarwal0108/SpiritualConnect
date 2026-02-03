@@ -2,8 +2,11 @@ FROM oven/bun:latest
 
 WORKDIR /app
 
+
 # Install dependencies
-COPY package.json bun.lock ./
+# Ensure Prisma schema is available to postinstall hooks during `bun install`.
+# Copy the prisma folder before installing so `bunx prisma generate` can run.
+COPY package.json bun.lock prisma ./
 RUN bun install
 
 # Copy source code
