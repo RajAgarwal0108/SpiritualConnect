@@ -7,7 +7,7 @@ RUN bun install
 
 COPY . .
 
-# Generate Prisma client at build time
+# Generate Prisma client at build time to a specific folder
 RUN bunx prisma generate
 
 EXPOSE 3001

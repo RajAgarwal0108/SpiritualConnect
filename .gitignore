@@ -23,6 +23,9 @@ bun.log
 # Documentation (Internal)
 docs/
 
+# Local Vercel env (sensitive)
+vercel.env
+
 # OS
 .DS_Store
 Thumbs.db
