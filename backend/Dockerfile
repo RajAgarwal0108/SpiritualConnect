@@ -11,7 +11,7 @@ COPY . .
 
 # Generate Prisma client
 ENV PRISMA_CLIENT_ENGINE_TYPE=binary
-RUN bun run generate
+RUN bun run postinstall
 
 EXPOSE 3001
 

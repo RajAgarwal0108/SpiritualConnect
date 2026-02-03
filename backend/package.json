@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "bun run --watch index.ts",
-    "start": "bun run generate && bun run index.ts",
-    "generate": "bunx prisma generate",
+    "start": "bun run index.ts",
+    "postinstall": "bunx prisma generate",
     "db:up": "docker-compose -f ../docker/docker-compose.yml up -d",
     "db:push": "bunx prisma db push",
     "db:studio": "bunx prisma studio",
