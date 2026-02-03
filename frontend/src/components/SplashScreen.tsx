@@ -36,9 +36,8 @@ export const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
               transition={{ duration: 1.2, ease: SACRED_EASE as any }}
               className="mb-8"
             >
-              <div className="w-24 h-24 mx-auto rounded-full bg-linear-to-b from-sacred-gold to-sacred-gold-dark flex items-center justify-center shadow-2xl">
-                <span className="text-white text-4xl font-serif">ॐ</span>
-              </div>
+              {/* Use the new spiritual SVG logo from public folder */}
+              <img src="/file.svg" alt="SpiritualConnect" className="w-24 h-24 mx-auto shadow-2xl rounded-full bg-white/0" />
             </motion.div>
 
             {/* Sanskrit Inspired Tagline */}

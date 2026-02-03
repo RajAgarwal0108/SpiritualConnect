@@ -1,1 +1,20 @@
-<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+<!-- SpiritualConnect logo: stylized lotus / sacred mark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">
+	<defs>
+		<linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0%" stop-color="#D9A05B" />
+			<stop offset="100%" stop-color="#C18841" />
+		</linearGradient>
+	</defs>
+	<rect width="64" height="64" rx="12" fill="url(#g)" />
+	<g transform="translate(8,8) scale(0.75)" fill="#fff">
+		<!-- central lotus petals -->
+		<path d="M24 6c-6 6-8 12-8 12s4 0 8-4 8 4 8 4-2-6-8-12z" />
+		<path d="M24 6c6 6 8 12 8 12s-4 0-8-4-8 4-8 4 2-6 8-12z" />
+		<!-- outer petals -->
+		<path d="M12 18c-6 6-6 14-6 14s6-2 10-8 10 8 10 8 0-8-6-14c-4-4-8-4-8-4s-4 0-10 4z" opacity="0.95" />
+		<path d="M36 18c6 6 6 14 6 14s-6-2-10-8-10 8-10 8 0-8 6-14c4-4 8-4 8-4s4 0 10 4z" opacity="0.95" />
+		<!-- small sacred mark (ॐ) placeholder as subtle glyph -->
+		<text x="24" y="36" font-size="10" text-anchor="middle" font-family="serif" fill="#C18841">ॐ</text>
+	</g>
+</svg>

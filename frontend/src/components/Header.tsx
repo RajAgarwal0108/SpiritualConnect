@@ -60,8 +60,9 @@ export default function Header() {
             </button>
           )}
           
-          <Link href="/" className="font-serif text-xl font-semibold text-sacred-gold tracking-tight">
-            SpiritualConnect
+          <Link href="/" className="flex items-center font-serif text-xl font-semibold text-sacred-gold tracking-tight">
+            <img src="/file.svg" alt="SpiritualConnect" className="w-8 h-8 mr-3" />
+            <span>SpiritualConnect</span>
           </Link>
           <span className="hidden lg:block h-4 w-px bg-sacred-border" />
           <span className="hidden lg:block text-[10px] uppercase tracking-[0.2em] text-sacred-muted font-bold">A Sanctuary</span>
