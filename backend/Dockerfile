@@ -12,6 +12,10 @@ RUN bun install
 # Copy source code
 COPY . .
 
+# Ensure Prisma client is generated explicitly after full source is present
+# This is a defensive step to guarantee the generated client exists in the image.
+RUN bun run generate
+
 # Generate Prisma client
 ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 RUN bun run postinstall
