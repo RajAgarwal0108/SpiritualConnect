@@ -1,17 +1,19 @@
-FROM oven/bun:1.0
+FROM oven/bun:latest
 
 WORKDIR /app
 
+# Install dependencies
 COPY package.json bun.lock ./
 RUN bun install
 
+# Copy source code
 COPY . .
 
-# Generate Prisma client at build time
+# Generate Prisma client
 ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 RUN bun run generate
 
 EXPOSE 3001
 
-# Start the application. We run generate again at start to be absolutely sure.
-CMD ["sh", "-c", "PRISMA_CLIENT_ENGINE_TYPE=binary bun run generate && bun run index.ts"]
+# Start the application
+CMD ["bun", "run", "index.ts"]
