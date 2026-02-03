@@ -21,6 +21,34 @@ import { registerUserSocket, unregisterUserSocket, getOnlineUserIds } from "./se
 const app = express();
 const httpServer = createServer(app);
 
+// Shared CORS configuration — apply before any route or middleware so
+// preflight OPTIONS requests are handled correctly for REST and Socket.IO.
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://your-frontend.onrender.com",
+];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser clients (Postman, curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+// Apply CORS early so preflight requests are answered correctly
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 // Logging
 app.use(morgan("dev"));
 
@@ -38,14 +66,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 const io = new Server(httpServer, {
-  cors: {
-    origin: [
-      "http://localhost:3000",
-      "https://your-frontend.onrender.com",
-    ],
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  // Reuse the same CORS config so Socket.IO and REST behave identically.
+  cors: corsOptions,
 });
 
 const selectOnlineUserFields = {
@@ -78,7 +100,6 @@ const port = process.env.PORT || 3001;
 
 export { app, prisma };
 
-app.use(cors());
 app.use(express.json());
 
 // Health check
