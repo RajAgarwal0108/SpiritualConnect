@@ -16,10 +16,12 @@ import aiRoutes from "./routes/ai.routes";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { StorageService } from "./services/storage.service";
 import { registerUserSocket, unregisterUserSocket, getOnlineUserIds } from "./services/presence.service";
-
 const app = express();
 const httpServer = createServer(app);
+
+const STORAGE_TYPE = process.env.STORAGE_TYPE || "local";
 
 // Shared CORS configuration — apply before any route or middleware so
 // preflight OPTIONS requests are handled correctly for REST and Socket.IO.
@@ -58,11 +60,8 @@ if (!fs.existsSync(uploadDir)) {
 }
 app.use("/uploads", express.static(uploadDir));
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
-});
-const upload = multer({ storage });
+// Configure Multer - always use memory storage and let StorageService handle it
+const upload = multer({ storage: multer.memoryStorage() });
 
 const io = new Server(httpServer, {
   // Reuse the same CORS config so Socket.IO and REST behave identically.
@@ -127,9 +126,16 @@ app.get("/", (req, res) => {
 });
 
 // File Upload Endpoint
-app.post("/api/upload", upload.single("file"), (req, res) => {
+app.post("/api/upload", upload.single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-  res.json({ url: `/uploads/${req.file.filename}` });
+
+  try {
+    const url = await StorageService.uploadFile(req.file.buffer, req.file.originalname);
+    res.json({ url });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ message: "Upload failed", error: error instanceof Error ? error.message : String(error) });
+  }
 });
 
 // Auth Routes

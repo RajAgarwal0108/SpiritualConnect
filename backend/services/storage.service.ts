@@ -1,17 +1,30 @@
 import { writeFile, unlink, mkdir } from "fs/promises";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
-import { uploadFile } from "@huggingface/hub";
 import { existsSync } from "fs";
+import { v2 as cloudinary } from "cloudinary";
+import { Readable } from "stream";
 
 /**
  * Storage Service
- * Supports Local Storage and Hugging Face Cloud Storage
  */
 export class StorageService {
   private static uploadDir = join(process.cwd(), "uploads");
-  private static hfToken = process.env.HF_TOKEN;
-  private static hfRepo = process.env.HF_REPO_ID; // e.g. "username/spiritual-assets"
+  private static storageType = process.env.STORAGE_TYPE || "local";
+  private static isInitialized = false;
+
+  private static init() {
+    if (this.isInitialized) return;
+    
+    if (this.storageType === "cloudinary") {
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+      });
+    }
+    this.isInitialized = true;
+  }
 
   private static async ensureDir() {
     if (!existsSync(this.uploadDir)) {
@@ -23,26 +36,27 @@ export class StorageService {
    * Uploads a file and returns the URL
    */
   static async uploadFile(fileBuffer: Buffer, fileName: string): Promise<string> {
+    this.init();
     const fileExtension = fileName.split(".").pop();
-    const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+    const baseName = uuidv4();
+    const uniqueFileName = `${baseName}.${fileExtension}`;
 
-    // If Hugging Face is configured, upload there
-    if (this.hfToken && this.hfRepo) {
-      try {
-        await uploadFile({
-          repo: { type: "dataset", name: this.hfRepo },
-          credentials: { accessToken: this.hfToken },
-          file: {
-            path: `uploads/${uniqueFileName}`,
-            content: new Blob([fileBuffer])
+    if (this.storageType === "cloudinary") {
+      const folder = process.env.CLOUDINARY_FOLDER || "spiritual_connect";
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder, public_id: baseName, overwrite: true },
+          (error: any, result: any) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
           }
-        });
-        
-        // Return Hugging Face resolve URL
-        return `https://huggingface.co/datasets/${this.hfRepo}/resolve/main/uploads/${uniqueFileName}`;
-      } catch (error) {
-        console.error("Hugging Face Upload Failed, falling back to local:", error);
-      }
+        );
+
+        const bufferStream = new Readable();
+        bufferStream.push(fileBuffer);
+        bufferStream.push(null);
+        bufferStream.pipe(uploadStream);
+      });
     }
 
     // Fallback to local storage
@@ -57,8 +71,27 @@ export class StorageService {
    * Deletes a file from storage
    */
   static async deleteFile(fileUrl: string): Promise<void> {
-    // Note: HF deletion is more complex (requires commit), 
-    // for simplicity in MVP we focus on local deletion fallback
+    this.init();
+    if (this.storageType === "cloudinary" && fileUrl.includes("cloudinary.com")) {
+      try {
+        const splitUrl = fileUrl.split("/");
+        const lastPart = splitUrl[splitUrl.length - 1];
+        if (!lastPart) return;
+
+        // lastPart is typically <public_id>.<ext>
+        const publicIdWithExtension = lastPart.split(".")[0];
+        if (!publicIdWithExtension) return;
+
+        const folder = process.env.CLOUDINARY_FOLDER || "spiritual_connect";
+        const publicId = `${folder}/${publicIdWithExtension}`;
+
+        await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
+      } catch (error) {
+        console.error("Failed to delete Cloudinary file:", error);
+      }
+      return;
+    }
+
     if (fileUrl.startsWith("/uploads/")) {
       const fileName = fileUrl.replace("/uploads/", "");
       const filePath = join(this.uploadDir, fileName);
