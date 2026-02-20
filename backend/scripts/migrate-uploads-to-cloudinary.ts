@@ -9,7 +9,7 @@ async function uploadToCloudinary(buffer: Buffer, fileName: string) {
   const cloud = process.env.CLOUDINARY_CLOUD_NAME as string;
   const apiKey = process.env.CLOUDINARY_API_KEY as string;
   const apiSecret = process.env.CLOUDINARY_API_SECRET as string;
-  const folder = process.env.CLOUDINARY_FOLDER || "spiritual_connect";
+  const folder = process.env.CLOUDINARY_FOLDER || "spiritual-connect";
 
   if (!cloud || !apiKey || !apiSecret) {
     throw new Error("Cloudinary credentials are not set in environment");
@@ -42,7 +42,10 @@ async function uploadToCloudinary(buffer: Buffer, fileName: string) {
 async function migrate() {
   console.log("Starting migration: local uploads -> Cloudinary");
 
-  const uploadsDir = path.join(process.cwd(), "backend", "uploads");
+  // Fix: determine uploads directory relative to project root or current cwd
+  const uploadsDir = process.cwd().endsWith("backend") 
+    ? path.join(process.cwd(), "uploads")
+    : path.join(process.cwd(), "backend", "uploads");
 
   // Process Posts
   const posts = await prisma.post.findMany({ where: { media: { startsWith: "/uploads/" } } });

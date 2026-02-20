@@ -3,6 +3,7 @@ import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 import { existsSync } from "fs";
 import { v2 as cloudinary } from "cloudinary";
+import type { UploadApiResponse } from "cloudinary";
 import { Readable } from "stream";
 
 /**
@@ -16,12 +17,22 @@ export class StorageService {
   private static init() {
     if (this.isInitialized) return;
     
-    if (this.storageType === "cloudinary") {
-      cloudinary.config({
+    const storageType = process.env.STORAGE_TYPE || "local";
+    console.log(`StorageService: Initializing with type ${storageType}`);
+    
+    if (storageType === "cloudinary") {
+      const config = {
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
         api_key: process.env.CLOUDINARY_API_KEY,
         api_secret: process.env.CLOUDINARY_API_SECRET,
-      });
+        secure: true
+      };
+      
+      if (!config.cloud_name || !config.api_key || !config.api_secret) {
+        console.warn("StorageService: Cloudinary credentials missing! Using unsigned upload if preset is provided.");
+      }
+
+      cloudinary.config(config);
     }
     this.isInitialized = true;
   }
@@ -37,29 +48,55 @@ export class StorageService {
    */
   static async uploadFile(fileBuffer: Buffer, fileName: string): Promise<string> {
     this.init();
-    const fileExtension = fileName.split(".").pop();
+    const storageType = process.env.STORAGE_TYPE || "local";
+    console.log(`StorageService: Uploading ${fileName} (${fileBuffer.length} bytes). Storage Type: ${storageType}`);
+    
+    const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
     const baseName = uuidv4();
     const uniqueFileName = `${baseName}.${fileExtension}`;
 
-    if (this.storageType === "cloudinary") {
-      const folder = process.env.CLOUDINARY_FOLDER || "spiritual_connect";
-      return new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          { folder, public_id: baseName, overwrite: true },
-          (error: any, result: any) => {
-            if (error) reject(error);
-            else resolve(result.secure_url);
-          }
-        );
+    if (storageType === "cloudinary") {
+      const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+      const apiKey = process.env.CLOUDINARY_API_KEY;
+      const apiSecret = process.env.CLOUDINARY_API_SECRET;
+      const folder = process.env.CLOUDINARY_FOLDER || "spiritual-connect";
+      const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || "spiritual-connect";
+      
+      try {
+        const uploadOptions: any = {
+          cloud_name: cloudName,
+          api_key: apiKey,
+          api_secret: apiSecret,
+          folder,
+          public_id: baseName,
+          overwrite: true,
+          resource_type: "auto",
+        };
 
-        const bufferStream = new Readable();
-        bufferStream.push(fileBuffer);
-        bufferStream.push(null);
-        bufferStream.pipe(uploadStream);
-      });
-    }
+        if (uploadPreset) {
+          uploadOptions.upload_preset = uploadPreset;
+        }
 
-    // Fallback to local storage
+        if (!apiSecret) {
+          uploadOptions.unsigned = true;
+        }
+
+        // Using base64 for maximum reliability in Node environment
+        const b64 = fileBuffer.toString("base64");
+        const mimeType = fileExtension === "pdf" ? "application/pdf" : 
+                         ["mp4", "mov", "avi"].includes(fileExtension) ? `video/${fileExtension}` : 
+                         `image/${fileExtension || "png"}`;
+        
+        const dataUri = `data:${mimeType};base64,${b64}`;
+        const result = await cloudinary.uploader.upload(dataUri, uploadOptions);
+
+        return result.secure_url;
+      } catch (error) {
+        console.error("Cloudinary Upload Error:", error);
+        throw error;
+      }
+    }    // Fallback to local storage
+    console.log(`StorageService: Falling back to local storage for ${uniqueFileName}`);
     await this.ensureDir();
     const filePath = join(this.uploadDir, uniqueFileName);
     await writeFile(filePath, fileBuffer);
@@ -85,7 +122,12 @@ export class StorageService {
         const folder = process.env.CLOUDINARY_FOLDER || "spiritual_connect";
         const publicId = `${folder}/${publicIdWithExtension}`;
 
-        await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
+        // Infer resource type from extension
+        const ext = lastPart.split(".").pop()?.toLowerCase();
+        const videoExtensions = ["mp4", "mov", "avi", "webm", "mkv"];
+        const resourceType = ext && videoExtensions.includes(ext) ? "video" : "image";
+
+        await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
       } catch (error) {
         console.error("Failed to delete Cloudinary file:", error);
       }
