@@ -36,19 +36,25 @@ const corsOptions: cors.CorsOptions = {
     // Allow non-browser clients (Postman, curl)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    // Normalize origin by removing trailing slash
+    const normalizedOrigin = origin.replace(/\/$/, "");
+
+    if (allowedOrigins.map(o => o.replace(/\/$/, "")).includes(normalizedOrigin)) {
       return callback(null, true);
     }
 
+    console.warn(`CORS blocked for origin: ${origin}`);
     return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
 };
 
 // Apply CORS early so preflight requests are answered correctly
 app.use(cors(corsOptions));
+// CORS preflight is handled by the middleware above
+
 
 // Logging
 app.use(morgan("dev"));
@@ -61,7 +67,12 @@ if (!fs.existsSync(uploadDir)) {
 app.use("/uploads", express.static(uploadDir));
 
 // Configure Multer - always use memory storage and let StorageService handle it
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit (Cloudinary free tier limit)
+  }
+});
 
 const io = new Server(httpServer, {
   // Reuse the same CORS config so Socket.IO and REST behave identically.
@@ -126,15 +137,27 @@ app.get("/", (req, res) => {
 });
 
 // File Upload Endpoint
-app.post("/api/upload", upload.single("file"), async (req, res) => {
-  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+app.post("/api/upload", (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] Upload route hit from origin: ${req.headers.origin}`);
+  next();
+}, upload.single("file"), async (req, res) => {
+  if (!req.file) {
+    console.warn("Upload attempt with no file");
+    return res.status(400).json({ message: "No file uploaded" });
+  }
 
+  console.log(`Processing upload: ${req.file.originalname} (${req.file.size} bytes)`);
   try {
     const url = await StorageService.uploadFile(req.file.buffer, req.file.originalname);
+    console.log("Upload success:", url);
     res.json({ url });
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({ message: "Upload failed", error: error instanceof Error ? error.message : String(error) });
+    console.error("Upload handler caught error:", error);
+    res.status(500).json({ 
+      message: "Upload failed", 
+      error: error instanceof Error ? error.message : "Unknown error",
+      details: error
+    });
   }
 });
 
@@ -161,6 +184,20 @@ app.use("/api/messages", messageRoutes);
 
 // AI Routes
 app.use("/api/ai", aiRoutes);
+
+// Global Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Global Error Context:", {
+    method: req.method,
+    url: req.url,
+    body: req.body,
+    error: err
+  });
+  res.status(500).json({ 
+    message: "Internal Server Error", 
+    error: err.message || String(err)
+  });
+});
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
