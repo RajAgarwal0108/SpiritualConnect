@@ -45,12 +45,14 @@ export default function Header() {
   // Don't show header on admin pages (they have their own sidebar)
   if (pathname.startsWith("/admin")) return null;
 
+  const isAuthPage = pathname === "/login" || pathname === "/register";
+
   return (
     <header className="glass-panel sticky top-0 z-50 border-b-0">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Left: Menu Toggle + Logo + Essence */}
         <div className="flex items-center space-x-4">
-          {!isLeftSidebarOpen && (
+          {!isLeftSidebarOpen && !isAuthPage && (
             <button 
               onClick={toggleLeftSidebar}
               className={`p-2 rounded-xl transition-colors flex items-center justify-center hover:bg-sacred-beige text-sacred-muted`}
@@ -72,14 +74,16 @@ export default function Header() {
         {mounted ? (
           <div className="flex items-center space-x-3">
             {/* Chat Toggle Button */}
-            <button 
-              onClick={toggleRightSidebar}
-              className={`p-2 rounded-xl transition-all duration-300 flex items-center justify-center ${isRightSidebarOpen ? 'bg-sacred-gold text-white shadow-lg shadow-sacred-gold/20' : 'hover:bg-sacred-gold/10 text-sacred-muted hover:text-sacred-gold'}`}
-              title="Conversations"
-            >
-              <MessageCircle size={20} className={isRightSidebarOpen ? 'scale-110' : ''} />
-              <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.2em] hidden md:inline">Conversations</span>
-            </button>
+            {user && !isAuthPage && (
+              <button 
+                onClick={toggleRightSidebar}
+                className={`p-2 rounded-xl transition-all duration-300 flex items-center justify-center ${isRightSidebarOpen ? 'bg-sacred-gold text-white shadow-lg shadow-sacred-gold/20' : 'hover:bg-sacred-gold/10 text-sacred-muted hover:text-sacred-gold'}`}
+                title="Conversations"
+              >
+                <MessageCircle size={20} className={isRightSidebarOpen ? 'scale-110' : ''} />
+                <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.2em] hidden md:inline">Conversations</span>
+              </button>
+            )}
 
             {user?.role === 'ADMIN' && (
               <Link 
