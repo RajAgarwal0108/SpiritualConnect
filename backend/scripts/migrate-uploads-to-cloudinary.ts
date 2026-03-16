@@ -1,27 +1,35 @@
-import "../config/init-env"; // load .env for scripts
+import "../config/init-env";
 import { readFile, readdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { prisma } from "../lib/prisma";
-import { StorageService } from "../services/storage.service";
+
+const uploadsDir = process.cwd().endsWith("backend")
+  ? path.join(process.cwd(), "uploads")
+  : path.join(process.cwd(), "backend", "uploads");
+
+const CONCURRENCY = 5;
 
 async function uploadToCloudinary(buffer: Buffer, fileName: string) {
-  const cloud = process.env.CLOUDINARY_CLOUD_NAME as string;
-  const apiKey = process.env.CLOUDINARY_API_KEY as string;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET as string;
+  const cloud = process.env.CLOUDINARY_CLOUD_NAME!;
+  const apiKey = process.env.CLOUDINARY_API_KEY!;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET!;
   const folder = process.env.CLOUDINARY_FOLDER || "spiritual-connect";
 
-  if (!cloud || !apiKey || !apiSecret) {
-    throw new Error("Cloudinary credentials are not set in environment");
-  }
-
   const ext = path.extname(fileName).replace(".", "") || "jpg";
-  const publicId = path.parse(fileName).name;
+  const publicId = `${path.parse(fileName).name}-${Date.now()}`;
+
   const timestamp = Math.floor(Date.now() / 1000);
+
   const paramsToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}`;
-  const signature = crypto.createHash("sha1").update(paramsToSign + apiSecret).digest("hex");
+
+  const signature = crypto
+    .createHash("sha1")
+    .update(paramsToSign + apiSecret)
+    .digest("hex");
 
   const form = new FormData();
+
   form.append("file", `data:image/${ext};base64,${buffer.toString("base64")}`);
   form.append("api_key", apiKey);
   form.append("timestamp", String(timestamp));
@@ -29,142 +37,105 @@ async function uploadToCloudinary(buffer: Buffer, fileName: string) {
   form.append("folder", folder);
   form.append("signature", signature);
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/upload`, {
-    method: "POST",
-    body: form,
-  });
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloud}/image/upload`,
+    { method: "POST", body: form }
+  );
 
-  const json = await res.json();
-  if (!res.ok) throw new Error(json.error?.message || JSON.stringify(json));
-  return json.secure_url as string;
+  const json: any = await res.json();
+
+  if (!res.ok) throw new Error(json?.error?.message || JSON.stringify(json));
+
+  return json?.secure_url as string;
+}
+
+const getSuffix = (name: string) => {
+  const index = name.indexOf("-");
+  return index === -1 ? name : name.slice(index + 1);
+};
+
+async function getBufferForFile(fileName: string) {
+  let filePath = path.join(uploadsDir, fileName);
+
+  try {
+    return { buffer: await readFile(filePath), fileName };
+  } catch {
+    const suffix = getSuffix(fileName);
+    const files = await readdir(uploadsDir);
+
+    const candidate = files.find((f) => f.endsWith(suffix));
+
+    if (!candidate) throw new Error(`File not found: ${fileName}`);
+
+    console.warn(`Fallback used: ${candidate}`);
+
+    const fallbackPath = path.join(uploadsDir, candidate);
+
+    return {
+      buffer: await readFile(fallbackPath),
+      fileName: candidate,
+    };
+  }
+}
+
+async function processItems(items: any[], field: string, table: string) {
+  const queue = [...items];
+
+  async function worker() {
+    while (queue.length) {
+      const item = queue.shift();
+      if (!item) return;
+
+      try {
+        const localPath = item[field];
+        const fileName = path.basename(localPath);
+
+        const { buffer, fileName: resolved } =
+          await getBufferForFile(fileName);
+
+        const url = await uploadToCloudinary(buffer, resolved);
+
+        await (prisma as any)[table].update({
+          where: { id: item.id },
+          data: { [field]: url },
+        });
+
+        console.log(`${table} ${item.id} migrated`);
+      } catch (err) {
+        console.error(`${table} ${item.id} failed`, err);
+      }
+    }
+  }
+
+  await Promise.all(Array(CONCURRENCY).fill(null).map(worker));
 }
 
 async function migrate() {
-  console.log("Starting migration: local uploads -> Cloudinary");
+  console.log("Starting migration...");
 
-  // Fix: determine uploads directory relative to project root or current cwd
-  const uploadsDir = process.cwd().endsWith("backend") 
-    ? path.join(process.cwd(), "uploads")
-    : path.join(process.cwd(), "backend", "uploads");
+  const posts = await prisma.post.findMany({
+    where: { media: { startsWith: "/uploads/" } },
+  });
 
-  // Process Posts
-  const posts = await prisma.post.findMany({ where: { media: { startsWith: "/uploads/" } } });
-  console.log(`Found ${posts.length} posts with local media`);
-  for (const p of posts) {
-    try {
-      const localPath = p.media as string; // e.g. /uploads/filename.jpg
-      const fileName = path.basename(localPath);
-      let filePath = path.join(uploadsDir, fileName);
-      let buffer;
-      try {
-        buffer = await readFile(filePath);
-      } catch (err) {
-        // fallback: try to find any file in uploads that endsWith the suffix after the first dash
-        const suffix = fileName.includes("-") ? fileName.split(/-(.+)/)[1] : fileName;
-  const filesRaw = await readdir(uploadsDir) as any[];
-  const files = filesRaw.filter(Boolean) as string[];
-        const candidates: string[] = [];
-        for (const f of files) {
-          if (typeof f === "string" && f.endsWith(suffix)) candidates.push(f);
-        }
-        if (candidates.length > 0) {
-          // pick the first candidate (could be improved to pick newest)
-          const candidate = candidates[0];
-          filePath = path.join(uploadsDir, candidate);
-          buffer = await readFile(filePath);
-          console.warn(`Post ${p.id}: original file ${fileName} not found, using fallback ${candidate}`);
-        } else {
-          throw err;
-        }
-      }
+  const blogs = await prisma.blog.findMany({
+    where: { coverImage: { startsWith: "/uploads/" } },
+  });
 
-  const url = await uploadToCloudinary(buffer, path.basename(filePath));
-      await prisma.post.update({ where: { id: p.id }, data: { media: url } });
-      console.log(`Post ${p.id}: migrated -> ${url}`);
-    } catch (err) {
-      console.error(`Post ${p.id}: failed to migrate -`, (err as Error).message);
-    }
-  }
+  const profiles = await prisma.profile.findMany({
+    where: { avatar: { startsWith: "/uploads/" } },
+  });
 
-  // Process Blogs
-  const blogs = await prisma.blog.findMany({ where: { coverImage: { startsWith: "/uploads/" } } });
-  console.log(`Found ${blogs.length} blogs with local coverImage`);
-  for (const b of blogs) {
-    try {
-      const localPath = b.coverImage as string;
-      const fileName = path.basename(localPath);
-      let filePath = path.join(uploadsDir, fileName);
-      let buffer;
-      try {
-        buffer = await readFile(filePath);
-      } catch (err) {
-        const suffix = fileName.includes("-") ? fileName.split(/-(.+)/)[1] : fileName;
-  const filesRaw = await readdir(uploadsDir) as any[];
-  const files = filesRaw.filter(Boolean) as string[];
-        const candidates: string[] = [];
-        for (const f of files) {
-          if (typeof f === "string" && f.endsWith(suffix)) candidates.push(f);
-        }
-        if (candidates.length > 0) {
-          const candidate = candidates[0];
-          filePath = path.join(uploadsDir, candidate);
-          buffer = await readFile(filePath);
-          console.warn(`Blog ${b.id}: original file ${fileName} not found, using fallback ${candidate}`);
-        } else {
-          throw err;
-        }
-      }
+  console.log(`Posts: ${posts.length}`);
+  console.log(`Blogs: ${blogs.length}`);
+  console.log(`Profiles: ${profiles.length}`);
 
-  const url = await uploadToCloudinary(buffer, path.basename(filePath));
-      await prisma.blog.update({ where: { id: b.id }, data: { coverImage: url } });
-      console.log(`Blog ${b.id}: migrated -> ${url}`);
-    } catch (err) {
-      console.error(`Blog ${b.id}: failed to migrate -`, (err as Error).message);
-    }
-  }
+  await processItems(posts, "media", "post");
+  await processItems(blogs, "coverImage", "blog");
+  await processItems(profiles, "avatar", "profile");
 
-  // Process Profiles (avatars)
-  const profiles = await prisma.profile.findMany({ where: { avatar: { startsWith: "/uploads/" } } });
-  console.log(`Found ${profiles.length} profiles with local avatar`);
-  for (const pr of profiles) {
-    try {
-      const localPath = pr.avatar as string;
-      const fileName = path.basename(localPath);
-      let filePath = path.join(uploadsDir, fileName);
-      let buffer;
-      try {
-        buffer = await readFile(filePath);
-      } catch (err) {
-        const suffix = fileName.includes("-") ? fileName.split(/-(.+)/)[1] : fileName;
-  const filesRaw = await readdir(uploadsDir) as any[];
-  const files = filesRaw.filter(Boolean) as string[];
-        const candidates: string[] = [];
-        for (const f of files) {
-          if (typeof f === "string" && f.endsWith(suffix)) candidates.push(f);
-        }
-        if (candidates.length > 0) {
-          const candidate = candidates[0];
-          filePath = path.join(uploadsDir, candidate);
-          buffer = await readFile(filePath);
-          console.warn(`Profile ${pr.id}: original file ${fileName} not found, using fallback ${candidate}`);
-        } else {
-          throw err;
-        }
-      }
-
-  const url = await uploadToCloudinary(buffer, path.basename(filePath));
-      await prisma.profile.update({ where: { id: pr.id }, data: { avatar: url } });
-      console.log(`Profile ${pr.id}: migrated -> ${url}`);
-    } catch (err) {
-      console.error(`Profile ${pr.id}: failed to migrate -`, (err as Error).message);
-    }
-  }
-
-  console.log("Migration complete.");
-  process.exit(0);
+  console.log("Migration complete");
 }
 
-migrate().catch((err) => {
-  console.error("Migration failed:", err);
-  process.exit(1);
-});
+migrate()
+  .catch((err) => console.error(err))
+  .finally(() => process.exit());
