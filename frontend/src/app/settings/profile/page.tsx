@@ -18,7 +18,7 @@ const avatars = [
 ];
 
 export default function ProfileSettingsPage() {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState({
@@ -57,8 +57,9 @@ export default function ProfileSettingsPage() {
       const res = await api.put(`/users/${user?.id}`, data);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["userProfile", user?.id] });
+      setUser(data);
       alert("Profile updated successfully!");
     },
   });
