@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import api from "@/services/api";
+import api, { uploadApi } from "@/services/api";
 import { useAuthStore } from "@/store/globalStore";
 import { Loader2, Users, LayoutGrid, Image as ImageIcon, UserCircle2, MessageCircle } from "lucide-react";
 import { useState, useRef } from "react";
@@ -118,9 +118,7 @@ export default function CommunityHall() {
       try {
         const formData = new FormData();
         formData.append("file", selectedFile);
-        const uploadRes = await api.post("/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
+        const uploadRes = await uploadApi.post("/upload", formData);
         mediaUrl = uploadRes.data.url;
       } catch (error) {
         console.error("Failed to upload file:", error);
