@@ -7,8 +7,12 @@ import Link from "next/link";
 import { LayoutDashboard, Users, FileText, AlertTriangle, BarChart3, LogOut, BookOpen, PlusSquare, GraduationCap, Compass } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const router = useRouter();
+
+  const handleExitPortal = () => {
+    router.push("/");
+  };
 
   useEffect(() => {
     if (user && user.role !== "ADMIN") {
@@ -58,7 +62,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </Link>
         </nav>
         <div className="p-6 border-t border-sacred-border">
-          <button onClick={logout} className="flex items-center space-x-3 p-3.5 w-full rounded-2xl hover:bg-red-50 text-sacred-muted hover:text-red-500 transition-all font-medium">
+          <button
+            onClick={handleExitPortal}
+            className="flex items-center space-x-3 p-3.5 w-full rounded-2xl hover:bg-red-50 text-sacred-muted hover:text-red-500 transition-all font-medium"
+          >
             <LogOut size={20} strokeWidth={1.5} />
             <span>Exit Portal</span>
           </button>
