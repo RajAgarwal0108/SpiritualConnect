@@ -21,9 +21,10 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+    const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL || `${window.location.origin}/google-callback`;
     const params = new URLSearchParams({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_placeholder",
-      redirect_uri: "http://localhost:3000/google-callback",
+      redirect_uri: redirectUri,
       response_type: "code",
       scope: "email profile",
       access_type: "offline"
