@@ -13,12 +13,36 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || `${DEFAULT_HOST}/api`;
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  timeout: 30000, // 30 seconds default timeout
+});
+
+// Separate instance for file uploads with longer timeout
+export const uploadApi = axios.create({
+  baseURL: API_URL,
+  timeout: 120000, // 2 minutes for uploads
+});
+
+uploadApi.interceptors.request.use((config) => {
+  // For FormData uploads, don't set Content-Type
+  delete config.headers["Content-Type"];
+  
+  const token = useAuthStore.getState().token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 api.interceptors.request.use((config) => {
+  // Fallback for Content-Type if not FormData
+  if (!(config.data instanceof FormData)) {
+    config.headers["Content-Type"] = "application/json";
+  } else {
+    // CRITICAL: For FormData, we must ensure Content-Type is NOT set manually
+    // so axios/browser can set it with the correct boundary
+    delete config.headers["Content-Type"];
+  }
+  
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

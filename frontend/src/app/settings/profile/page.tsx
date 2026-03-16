@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuthStore } from "@/store/globalStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/services/api";
+import api, { uploadApi } from "@/services/api";
 import { Loader2, Camera, Check, Twitter, Instagram, Globe, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
@@ -131,7 +131,7 @@ export default function ProfileSettingsPage() {
                 const fd = new FormData();
                 fd.append("file", file);
                 try {
-                  const res = await api.post("/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                  const res = await uploadApi.post("/upload", fd);
                   const url = res.data.url;
                   setFormData((prev) => ({ ...prev, avatar: url }));
                 } catch (err) {
