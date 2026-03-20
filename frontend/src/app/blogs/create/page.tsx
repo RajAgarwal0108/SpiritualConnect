@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api, { uploadApi } from "@/services/api";
 import { Button } from "@/components/ui/Button";
-import { Loader2, ArrowLeft, Image as ImageIcon, Send, X } from "lucide-react";
+import { Loader2, ArrowLeft, Image as ImageIcon, Send, X, Camera, Sparkles } from "lucide-react";
 import { getMediaUrl } from "@/lib/media";
+import { motion } from "framer-motion";
 
 export default function CreateBlogPage() {
   const router = useRouter();
@@ -36,12 +37,6 @@ export default function CreateBlogPage() {
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.title || !formData.content) return;
-    createMutation.mutate(formData);
-  };
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -61,136 +56,175 @@ export default function CreateBlogPage() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title || !formData.content || createMutation.isPending) return;
+    createMutation.mutate(formData);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      <button 
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-sacred-muted hover:text-sacred-gold transition-colors mb-8 group"
-      >
-        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-        <span className="font-serif italic text-lg">Back to Chronicles</span>
-      </button>
-
-      <div className="bg-white/70 backdrop-blur-xl p-8 md:p-12 rounded-4xl border border-sacred-gold/10 shadow-2xl shadow-sacred-gold/5">
-        <div className="mb-12">
-          <h1 className="text-4xl font-serif font-bold text-sacred-text">Share Your Wisdom</h1>
-          <p className="text-sacred-muted italic mt-2">Write from the heart, for the heart.</p>
+    <div className="relative min-h-screen bg-[#FDFCFB] pb-14">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,185,127,0.12),transparent_38%)]" />
+      {/* Header */}
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-stone-100">
+        <div className="max-w-4xl mx-auto px-3 md:px-4 h-14 md:h-16 flex items-center justify-between">
+          <button 
+            onClick={() => router.back()}
+            className="p-2 -ml-2 text-stone-500 hover:text-stone-900 transition-colors"
+          >
+            <ArrowLeft className="size-5" />
+          </button>
+          <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">Share Wisdom</span>
+          <div className="w-9" />
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-3">
-            <label className="text-xs font-bold text-sacred-muted uppercase tracking-[0.2em] ml-2">Cover Image (Optional)</label>
-            <div className="relative group/img">
-              {formData.coverImage ? (
-                <div className="relative rounded-3xl overflow-hidden aspect-21/9 border-2 border-sacred-gold/20">
-                  <img src={getMediaUrl(formData.coverImage) || ""} alt="Cover" className="w-full h-full object-cover" />
-                  <button 
-                    type="button"
-                    onClick={() => setFormData({ ...formData, coverImage: "" })}
-                    className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center w-full aspect-21/9 bg-sacred-beige/30 border-2 border-dashed border-sacred-gold/20 rounded-3xl cursor-pointer hover:bg-sacred-beige/50 hover:border-sacred-gold/40 transition-all group">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    {isUploading ? (
-                      <Loader2 className="animate-spin text-sacred-gold mb-3" size={32} />
-                    ) : (
-                      <ImageIcon className="text-sacred-gold/40 mb-3 group-hover:scale-110 transition-transform" size={42} />
-                    )}
-                    <p className="mb-2 text-sm text-sacred-text font-serif">
-                      <span className="font-bold text-sacred-gold">Click to upload</span> cover image
-                    </p>
-                    <p className="text-xs text-sacred-muted">PNG, JPG, or JPEG (Max 5MB)</p>
-                  </div>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={isUploading} />
-                </label>
-              )}
-            </div>
+      <div className="relative max-w-4xl mx-auto px-2 md:px-4 pt-4 md:pt-6 text-stone-900">
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/95 rounded-[1.75rem] border border-stone-200 overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 md:p-8 space-y-6"
+        >
+          <div className="space-y-1 pb-2 border-b border-stone-100">
+            <h1 className="text-2xl md:text-3xl font-serif text-stone-900">Share Wisdom</h1>
+            <p className="text-sm italic text-stone-500">Write from the heart, for the heart.</p>
           </div>
 
-          <div className="space-y-3">
-            <label className="text-xs font-bold text-sacred-muted uppercase tracking-[0.2em] ml-2">Title of Reflection</label>
-            <input 
-              type="text"
-              placeholder="e.g. The Quiet Path Within..."
-              required
-              className="w-full bg-sacred-beige/30 border-none rounded-2xl px-6 py-5 text-xl font-serif text-sacred-text focus:ring-2 focus:ring-sacred-gold/20 outline-none placeholder:text-sacred-muted/40"
+          <div className="space-y-4">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Title</label>
+            <textarea
+              placeholder="The Silent Path..."
+              className="w-full text-2xl md:text-4xl font-serif bg-transparent border-none focus:ring-0 placeholder:text-stone-200 resize-none min-h-20 leading-tight"
               value={formData.title}
-              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-sacred-muted uppercase tracking-[0.2em] ml-2">Category</label>
-              <select 
-                className="w-full bg-sacred-beige/30 border-none rounded-2xl px-6 py-4 font-serif text-sacred-text focus:ring-2 focus:ring-sacred-gold/20 outline-none"
+          <div className="space-y-4">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Cover Image (Optional)</label>
+            <div
+              className="relative aspect-video md:aspect-21/9 rounded-2xl bg-linear-to-b from-stone-50 to-amber-50/40 border border-stone-200 overflow-hidden group cursor-pointer"
+              onClick={() => document.getElementById("image-upload")?.click()}
+            >
+              {formData.coverImage ? (
+                <>
+                  <img
+                    src={getMediaUrl(formData.coverImage) || ""}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Camera className="size-8 text-white" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFormData({ ...formData, coverImage: "" });
+                    }}
+                    className="absolute top-3 right-3 p-2 rounded-full bg-black/45 text-white hover:bg-red-500 transition-colors"
+                    aria-label="Remove cover image"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </>
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-300 gap-2">
+                  {isUploading ? (
+                    <Loader2 className="size-8 animate-spin" />
+                  ) : (
+                    <>
+                      <ImageIcon className="size-8" />
+                      <span className="text-sm font-medium">Add Cover Image</span>
+                      <span className="text-xs text-stone-400">PNG, JPG, or JPEG (Max 5MB)</span>
+                    </>
+                  )}
+                </div>
+              )}
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="space-y-4">
+              <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Category</label>
+              <select
+                className="w-full px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl focus:ring-1 focus:ring-stone-900 transition-all outline-none"
                 value={formData.category}
-                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               >
                 <option>Reflection</option>
+                <option>Ancient Wisdom</option>
+                <option>Mindfulness</option>
+                <option>Ritual</option>
                 <option>Guide</option>
                 <option>Story</option>
                 <option>Meditation</option>
                 <option>Poetry</option>
               </select>
             </div>
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-sacred-muted uppercase tracking-[0.2em] ml-2">Read Time</label>
-              <input 
+
+            <div className="space-y-4">
+              <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Read Time</label>
+              <input
                 type="text"
                 placeholder="e.g. 5 min read"
-                className="w-full bg-sacred-beige/30 border-none rounded-2xl px-6 py-4 font-serif text-sacred-text focus:ring-2 focus:ring-sacred-gold/20 outline-none"
+                className="w-full px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl focus:ring-1 focus:ring-stone-900 transition-all outline-none"
                 value={formData.readTime}
-                onChange={(e) => setFormData({...formData, readTime: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, readTime: e.target.value })}
               />
             </div>
           </div>
 
-          <div className="space-y-3">
-            <label className="text-xs font-bold text-sacred-muted uppercase tracking-[0.2em] ml-2">Short Summary</label>
-            <textarea 
-              placeholder="A brief essence of your reflection to entice the seekers..."
-              className="w-full bg-sacred-beige/30 border-none rounded-2xl px-6 py-4 font-serif text-sacred-text focus:ring-2 focus:ring-sacred-gold/20 outline-none min-h-25 resize-none"
+          <div className="space-y-4">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Short Summary</label>
+            <textarea
+              placeholder="A short summary to entice seekers..."
+              className="w-full p-4 md:p-5 bg-stone-50 border border-stone-100 rounded-2xl focus:ring-1 focus:ring-stone-900 transition-all outline-none resize-none h-28 md:h-32"
               value={formData.excerpt}
-              onChange={(e) => setFormData({...formData, excerpt: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
             />
           </div>
 
-          <div className="space-y-3">
-            <label className="text-xs font-bold text-sacred-muted uppercase tracking-[0.2em] ml-2">Content</label>
-            <textarea 
-              placeholder="Let your thoughts flow like a serene river..."
-              required
-              className="w-full bg-sacred-beige/30 border-none rounded-2xl px-6 py-6 font-serif text-sacred-text focus:ring-2 focus:ring-sacred-gold/20 outline-none min-h-100 leading-relaxed text-lg"
+          <div className="space-y-4">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Content</label>
+            <textarea
+              placeholder="Share your spiritual journey here..."
+              className="w-full text-base md:text-lg font-serif bg-stone-50 border border-stone-100 rounded-2xl focus:ring-1 focus:ring-stone-900 placeholder:text-stone-300 resize-none min-h-72 md:min-h-87.5 p-4 md:p-6 leading-[1.8] text-stone-700 outline-none"
               value={formData.content}
-              onChange={(e) => setFormData({...formData, content: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
             />
           </div>
 
-          <div className="pt-6 border-t border-sacred-gold/5 flex justify-end">
-            <Button 
-              type="submit" 
+          <div className="pt-5 border-t border-stone-100">
+            <Button
+              type="submit"
               disabled={createMutation.isPending || !formData.title || !formData.content}
-              className="bg-sacred-gold hover:bg-sacred-gold/90 text-white rounded-2xl px-12 py-7 h-auto text-xl font-serif transition-all duration-300 hover:shadow-xl hover:shadow-sacred-gold/20 disabled:grayscale"
+              className="w-full py-4 md:py-5 h-auto bg-stone-900 text-white rounded-full font-bold text-base md:text-lg hover:bg-stone-800 disabled:opacity-30 transition-all flex items-center justify-center gap-2"
             >
               {createMutation.isPending ? (
                 <>
-                  <Loader2 size={24} className="mr-3 animate-spin" />
+                  <Loader2 className="size-6 animate-spin" />
                   Sharing Wisdom...
                 </>
               ) : (
                 <>
-                  <Send size={22} className="mr-3" />
+                  <Send className="size-5" />
                   Publish Chronicle
+                  <Sparkles className="size-5" />
                 </>
               )}
             </Button>
           </div>
-        </form>
+        </motion.form>
       </div>
     </div>
   );

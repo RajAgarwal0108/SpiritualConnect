@@ -16,11 +16,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 	const pathname = usePathname();
 
 	return (
-		<div className="max-w-7xl mx-auto py-12 px-4 flex flex-col md:flex-row gap-8">
+		<div className="max-w-7xl mx-auto py-4 md:py-12 px-3 md:px-4 flex flex-col md:flex-row gap-4 md:gap-8">
 			{/* Sidebar */}
-			<aside className="w-full md:w-64 space-y-2">
-				<h2 className="text-2xl font-light text-sacred-text mb-8 px-4 font-serif italic">Control Center</h2>
-				<nav>
+			<aside className="w-full md:w-64 space-y-2 md:space-y-2 sticky top-14 md:top-auto z-20 md:z-auto bg-[#FDFCF9] md:bg-transparent pb-2 md:pb-0">
+				<h2 className="text-xl md:text-2xl font-light text-sacred-text mb-3 md:mb-8 px-2 md:px-4 font-serif italic">Control Center</h2>
+				<nav className="flex md:block gap-2 overflow-x-auto no-scrollbar px-1 md:px-0 pb-1">
 					{sidebarItems.map((item) => {
 						const isActive = pathname === item.href;
 						return (
@@ -28,7 +28,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 								key={item.href}
 								href={item.href}
 								className={cn(
-									"flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-200 group relative",
+									"shrink-0 flex items-center space-x-2 md:space-x-3 px-3 md:px-4 py-2.5 md:py-3 rounded-2xl transition-all duration-200 group relative",
 									isActive
 										? "bg-sacred-gold text-white shadow-lg shadow-sacred-gold/20"
 										: "text-sacred-muted hover:bg-sacred-gold/5 hover:text-sacred-gold"
@@ -48,7 +48,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 										isActive ? "text-white" : "group-hover:scale-110 transition-transform"
 									)}
 								/>
-								<span className="font-medium relative z-10">{item.label}</span>
+								<span className="font-medium relative z-10 text-sm md:text-base whitespace-nowrap">{item.label}</span>
 							</Link>
 						);
 					})}
@@ -61,7 +61,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.4 }}
-					className="bg-white rounded-4xl p-8 md:p-12 shadow-[0_20px_50px_rgba(217,160,91,0.05)] border border-sacred-gold/5 min-h-150"
+					className="bg-white rounded-3xl md:rounded-4xl p-4 md:p-12 shadow-[0_20px_50px_rgba(217,160,91,0.05)] border border-sacred-gold/5 min-h-120 md:min-h-150"
 				>
 					{children}
 				</motion.div>

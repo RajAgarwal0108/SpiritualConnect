@@ -75,7 +75,7 @@ export default function ProfilePage() {
   // We can use the calculated isOwnProfile which matches the hooks logic.
 
   return (
-    <main className="max-w-4xl mx-auto py-16 px-4">
+    <main className="max-w-4xl mx-auto py-6 md:py-16 px-3 md:px-4">
       <motion.div
         initial="initial"
         animate="animate"
@@ -83,14 +83,14 @@ export default function ProfilePage() {
       >
         <Card className="overflow-hidden border-none shadow-[0_20px_50px_rgba(217,160,91,0.05)] bg-white">
           {/* Header/Cover */}
-          <div className="h-64 bg-sacred-beige flex items-center justify-center relative overflow-hidden">
+          <div className="h-44 md:h-64 bg-sacred-beige flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,160,91,0.1)_0,transparent_70%)]" />
             <Sparkles className="text-sacred-gold/20 absolute top-8 right-8" size={32} />
           </div>
           
-          <div className="px-12 pb-12">
-            <div className="relative flex justify-between items-end -mt-20 mb-10">
-              <div className="w-40 h-40 rounded-4xl bg-white p-3 shadow-[0_10px_30px_rgba(0,0,0,0.08)] overflow-hidden">
+          <div className="px-4 md:px-12 pb-6 md:pb-12">
+            <div className="relative flex flex-col md:flex-row md:justify-between md:items-end -mt-14 md:-mt-20 mb-6 md:mb-10 gap-4 md:gap-0">
+              <div className="w-28 h-28 md:w-40 md:h-40 rounded-3xl md:rounded-4xl bg-white p-2 md:p-3 shadow-[0_10px_30px_rgba(0,0,0,0.08)] overflow-hidden">
                 {profile.profile?.avatar ? (
                   <img src={getMediaUrl(profile.profile.avatar) as string} alt={profile.name} className="w-full h-full object-cover rounded-3xl" />
                 ) : (
@@ -99,11 +99,11 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
-              <div className="flex space-x-4 mb-4">
+              <div className="flex space-x-3 md:space-x-4 md:mb-4 w-full md:w-auto">
                 {isOwnProfile ? (
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-3 w-full md:w-auto">
                     <a href="/settings/profile">
-                      <Button variant="secondary" className="flex items-center space-x-2">
+                      <Button variant="secondary" className="w-full md:w-auto flex items-center space-x-2">
                         <Edit size={16} />
                         <span className="text-sm font-medium">Refine Presence</span>
                       </Button>
@@ -113,7 +113,7 @@ export default function ProfilePage() {
                   <Button 
                     onClick={() => followMutation.mutate()}
                     variant={profile._count.followers > 0 ? "secondary" : "primary"}
-                    className="min-w-35"
+                    className="min-w-35 w-full md:w-auto"
                   >
                     {followMutation.isPending ? (
                       <Loader2 size={18} className="animate-spin" />
@@ -129,12 +129,12 @@ export default function ProfilePage() {
 
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <h1 className="text-4xl font-light text-sacred-text tracking-tight">{profile.name}</h1>
+                <h1 className="text-2xl md:text-4xl font-light text-sacred-text tracking-tight">{profile.name}</h1>
                 <span className="bg-sacred-beige px-3 py-1 rounded-full text-[10px] text-sacred-gold font-bold uppercase tracking-widest mt-1">Seeks Wisdom</span>
               </div>
               
               {profile.profile?.bio && (
-                <p className="text-sacred-muted text-lg font-serif italic leading-relaxed max-w-2xl py-2 line-clamp-3">
+                <p className="text-sacred-muted text-base md:text-lg font-serif italic leading-relaxed max-w-2xl py-2 line-clamp-3">
                   "{profile.profile.bio}"
                 </p>
               )}
@@ -145,7 +145,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-12 border-t border-sacred-gold/10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mt-8 md:mt-12 pt-8 md:pt-12 border-t border-sacred-gold/10">
               <div className="flex flex-col">
                 <span className="text-2xl font-light text-sacred-text">{profile._count.followers}</span>
                 <span className="text-[10px] text-sacred-muted/50 font-bold uppercase tracking-widest mt-1">Seekers</span>
@@ -167,12 +167,12 @@ export default function ProfilePage() {
         </Card>
 
         {/* Tabs Section */}
-        <div className="mt-12 space-y-8">
-          <div className="flex items-center justify-between border-b border-sacred-gold/10 pb-4">
-            <div className="flex gap-8">
+        <div className="mt-8 md:mt-12 space-y-5 md:space-y-8">
+          <div className="space-y-3 border-b border-sacred-gold/10 pb-3 md:pb-4">
+            <div className="flex gap-5 md:gap-8 overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setActiveTab("posts")}
-                className={`text-xl font-light font-serif italic transition-colors ${
+                className={`text-base md:text-xl font-light font-serif italic transition-colors whitespace-nowrap ${
                   activeTab === "posts"
                     ? "text-sacred-text border-b-2 border-sacred-gold pb-2"
                     : "text-sacred-muted hover:text-sacred-text"
@@ -182,7 +182,7 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={() => setActiveTab("communities")}
-                className={`text-xl font-light font-serif italic transition-colors ${
+                className={`text-base md:text-xl font-light font-serif italic transition-colors whitespace-nowrap ${
                   activeTab === "communities"
                     ? "text-sacred-text border-b-2 border-sacred-gold pb-2"
                     : "text-sacred-muted hover:text-sacred-text"
@@ -193,7 +193,7 @@ export default function ProfilePage() {
               {isOwnProfile && (
                 <button
                   onClick={() => setActiveTab("bookmarks")}
-                  className={`text-xl font-light font-serif italic transition-colors flex items-center gap-2 ${
+                  className={`text-base md:text-xl font-light font-serif italic transition-colors flex items-center gap-2 whitespace-nowrap ${
                     activeTab === "bookmarks"
                       ? "text-sacred-text border-b-2 border-sacred-gold pb-2"
                       : "text-sacred-muted hover:text-sacred-text"
@@ -222,7 +222,7 @@ export default function ProfilePage() {
                   <Loader2 className="animate-spin text-sacred-gold" size={32} />
                 </div>
               ) : userPosts.length > 0 ? (
-                <div className="grid gap-6">
+                <div className="grid gap-4 md:gap-6">
                   {userPosts.map((post: any) => (
                     <PostCard key={post.id} post={post} />
                   ))}
@@ -250,7 +250,7 @@ export default function ProfilePage() {
 
           {/* Communities Tab */}
           {activeTab === "communities" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {profile.memberships && profile.memberships.length > 0 ? (
                 profile.memberships.map((membership) => (
                   <motion.a 

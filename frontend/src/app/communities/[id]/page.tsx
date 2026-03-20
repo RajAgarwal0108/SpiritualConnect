@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import api, { uploadApi } from "@/services/api";
 import { useAuthStore } from "@/store/globalStore";
-import { Loader2, Users, LayoutGrid, Image as ImageIcon, UserCircle2, MessageCircle } from "lucide-react";
+import { Loader2, Users, LayoutGrid, Image as ImageIcon, UserCircle2, MessageCircle, Sparkles } from "lucide-react";
 import { useState, useRef } from "react";
 import Link from "next/link";
 import PostCard from "@/components/PostCard";
@@ -167,21 +167,21 @@ export default function CommunityHall() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden relative bg-sacred-beige/10 text-sacred-text">
+    <div className="flex h-[calc(100vh-56px)] md:h-[calc(100vh-64px)] overflow-hidden relative bg-sacred-beige/10 text-sacred-text">
 
       {/* Main Hall */}
       <main className="flex-1 overflow-y-auto relative no-scrollbar bg-white/30">
         {/* Community Hero */}
-        <div className="relative h-64 bg-sacred-gold/10 flex items-center justify-center overflow-hidden border-b border-white/20">
+        <div className="relative min-h-64 md:h-64 bg-sacred-gold/10 flex items-center justify-center overflow-hidden border-b border-white/20 px-4 py-8">
             <div className="absolute inset-0 opacity-5 pointer-events-none scale-150 rotate-12">
                 <LayoutGrid size={200} />
             </div>
-            <div className="text-center space-y-4 relative z-10 px-4">
-                <h1 className="font-serif text-5xl font-bold tracking-tight text-sacred-text">{community?.name}</h1>
-                <p className="text-sacred-muted italic max-w-lg mx-auto leading-relaxed">{community?.description}</p>
+            <div className="text-center space-y-4 relative z-10 w-full max-w-2xl mx-auto">
+                <h1 className="font-serif text-3xl md:text-5xl font-bold tracking-tight text-sacred-text leading-tight">{community?.name}</h1>
+                <p className="text-sacred-muted italic text-sm md:text-base max-w-lg mx-auto leading-relaxed">{community?.description}</p>
                 
-                <div className="flex items-center justify-center gap-6 pt-2">
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sacred-muted">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 pt-2">
+                    <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-sacred-muted">
                         <Users size={14} className="text-sacred-gold" />
                         {community?.memberCount} Members
                     </div>
@@ -189,19 +189,19 @@ export default function CommunityHall() {
                         <Button 
                             onClick={() => joinMutation.mutate()} 
                             disabled={joinMutation.isPending || !user}
-                            className="rounded-full px-8 bg-sacred-gold hover:bg-sacred-gold-dark text-white border-none shadow-md"
+                            className="w-full sm:w-auto rounded-full px-8 bg-sacred-gold hover:bg-sacred-gold-dark text-white border-none shadow-md py-6 sm:py-2"
                         >
                             {joinMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : "Join Sangha"}
                         </Button>
                     ) : (
-                        <div className="flex items-center gap-3">
-                            <span className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase border border-green-200">
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                            <span className="w-full sm:w-auto text-center bg-green-100 text-green-700 px-4 py-2 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-wide uppercase border border-green-200">
                                 ✓ Joined Member
                             </span>
                             <Button 
                                 onClick={() => leaveMutation.mutate()} 
                                 disabled={leaveMutation.isPending}
-                                className="rounded-full px-6 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 text-xs"
+                                className="w-full sm:w-auto rounded-full px-6 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 text-[10px] py-4 sm:py-2"
                             >
                                 {leaveMutation.isPending ? <Loader2 className="animate-spin" size={14} /> : "Leave"}
                             </Button>
@@ -211,14 +211,14 @@ export default function CommunityHall() {
             </div>
         </div>
 
-        {/* Tab Selection (Simplified for now) */}
-        <div className="sticky top-0 z-20 bg-white/60 backdrop-blur-xl border-b border-sacred-border/30 flex px-8">
-            <div className="max-w-xl mx-auto flex gap-12">
+        {/* Tab Selection */}
+        <div className="sticky top-0 z-20 bg-white/60 backdrop-blur-xl border-b border-sacred-border/30 flex justify-center px-4 overflow-x-auto no-scrollbar">
+            <div className="flex gap-8 md:gap-12 min-w-max">
                 {[{key:"posts", label:"Discussion"}, {key:"members", label:"Members"}].map(tab => (
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key as any)}
-                    className={`py-4 border-b-2 font-bold text-sm uppercase tracking-widest transition-colors ${activeTab === tab.key ? "border-sacred-gold text-sacred-gold" : "border-transparent text-sacred-muted hover:text-sacred-text"}`}
+                    className={`py-4 border-b-2 font-bold text-[10px] md:text-sm uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === tab.key ? "border-sacred-gold text-sacred-gold" : "border-transparent text-sacred-muted hover:text-sacred-text"}`}
                   >
                     {tab.label}
                   </button>
@@ -226,18 +226,25 @@ export default function CommunityHall() {
             </div>
         </div>
 
-        <div className="max-w-xl mx-auto py-12 px-4 space-y-12">
+        <div className="max-w-xl mx-auto py-6 md:py-12 px-3 md:px-4 space-y-6 md:space-y-12">
           {/* Composer for Posts or Discussions */}
       {isJoined && activeTab !== "members" && (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[32px] p-6 shadow-sm border border-white/40">
+            <div className="bg-white/75 backdrop-blur-xl rounded-3xl p-4 md:p-6 shadow-sm border border-white/50 ring-1 ring-sacred-gold/10">
                 <form onSubmit={handlePostSubmit} className="space-y-4">
-                    <div className="flex gap-4">
-                        <div className="w-10 h-10 rounded-full bg-sacred-beige shrink-0 flex items-center justify-center font-bold text-sacred-text">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-sacred-muted">Sacred Sharing Space</p>
+                      <div className="flex items-center gap-1 text-sacred-gold">
+                        <Sparkles size={13} />
+                        <Sparkles size={11} className="opacity-70" />
+                      </div>
+                    </div>
+                    <div className="flex gap-3 md:gap-4">
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-sacred-beige shrink-0 flex items-center justify-center font-bold text-sacred-text text-xs md:text-base">
                             {user?.name[0]}
                         </div>
                         <textarea 
-                            className="flex-1 bg-transparent border-none outline-none py-2 text-sacred-text placeholder:text-sacred-muted/60 font-serif italic text-lg resize-none min-h-25"
-              placeholder={`Share your resonance with the ${community?.name.split(' ').pop()} Sangha`}
+                            className="flex-1 bg-transparent border-none outline-none py-1 md:py-2 text-sacred-text placeholder:text-sacred-muted/60 font-serif italic text-base md:text-lg resize-none min-h-24"
+              placeholder={`Share your resonance...`}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />
@@ -245,11 +252,11 @@ export default function CommunityHall() {
                     
                     {/* Media Preview */}
                     {previewUrl && selectedFile && (
-                      <div className="relative rounded-2xl overflow-hidden border border-sacred-border/30">
+                      <div className="relative rounded-2xl overflow-hidden border border-sacred-border/30 bg-black/90">
                         {selectedFile.type.startsWith("video/") ? (
-                          <video src={previewUrl} controls className="w-full max-h-64 object-cover" />
+                          <video src={previewUrl} controls className="w-full h-auto max-h-72 object-contain" />
                         ) : (
-                          <img src={previewUrl} alt="Preview" className="w-full max-h-64 object-cover" />
+                          <img src={previewUrl} alt="Preview" className="w-full h-auto max-h-72 object-contain" />
                         )}
                         <button 
                           type="button"
@@ -264,8 +271,8 @@ export default function CommunityHall() {
                       </div>
                     )}
                     
-                    <div className="flex justify-between items-center pt-4 border-t border-sacred-border/20">
-                        <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center pt-4 border-t border-sacred-border/20">
+                      <div className="flex flex-wrap gap-3 items-center">
                              <button type="button" onClick={() => fileInputRef.current?.click()} className="text-sacred-muted hover:text-sacred-gold transition-colors flex items-center gap-2">
                                 <ImageIcon size={18} />
                                 <span className="text-xs font-medium">{selectedFile ? "Change Media" : "Add Media"}</span>
@@ -273,7 +280,7 @@ export default function CommunityHall() {
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" onChange={handleFileChange} />
                             {selectedFile && <span className="text-xs text-green-600 font-medium italic">{selectedFile.name}</span>}
                         </div>
-            <Button type="submit" disabled={createPostMutation.isPending || (!content.trim() && !selectedFile)} className="px-8 py-2.5 rounded-full text-sm font-bold tracking-wide">
+            <Button type="submit" disabled={createPostMutation.isPending || (!content.trim() && !selectedFile)} className="w-full sm:w-auto px-8 py-2.5 rounded-full text-sm font-bold tracking-wide">
               {createPostMutation.isPending ? <Loader2 className="animate-spin" size={16}/> : <span>Post Experience</span>}
                         </Button>
                     </div>
@@ -283,7 +290,7 @@ export default function CommunityHall() {
 
           {/* Content per tab */}
           {activeTab === "posts" && (
-            <div className="space-y-16 pb-20">
+            <div className="space-y-8 md:space-y-16 pb-20">
               {posts.map((post: any) => (
                   <PostCard key={post.id} post={post} />
               ))}

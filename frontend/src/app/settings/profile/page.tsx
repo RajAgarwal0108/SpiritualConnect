@@ -89,15 +89,15 @@ export default function ProfileSettingsPage() {
   };
 
   return (
-    <div className="space-y-12 pb-20">
+    <div className="space-y-6 md:space-y-12 pb-12 md:pb-20">
       <div>
-        <h3 className="text-3xl font-light text-sacred-text mb-2 tracking-tight">Public Identity</h3>
+        <h3 className="text-2xl md:text-3xl font-light text-sacred-text mb-2 tracking-tight">Public Identity</h3>
         <p className="text-sacred-muted font-medium font-serif italic">How the spiritual community sees your essence.</p>
       </div>
 
       <section className="space-y-6">
         <label className="text-[10px] font-bold text-sacred-muted/60 uppercase tracking-widest block">Select your Avatar</label>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-4 md:grid-cols-6 gap-3 md:gap-4">
           {avatars.map((url) => (
             <button
               key={url}
@@ -146,7 +146,7 @@ export default function ProfileSettingsPage() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="text-[10px] font-bold text-sacred-muted/60 uppercase tracking-widest ml-1">Display Name</label>
@@ -154,7 +154,7 @@ export default function ProfileSettingsPage() {
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-white border border-sacred-gold/10 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-sacred-gold/20 focus:border-sacred-gold/30 text-sacred-text font-medium transition-all shadow-xs"
+              className="w-full bg-white border border-sacred-gold/10 rounded-2xl py-3.5 md:py-4 px-4 md:px-6 focus:outline-none focus:ring-2 focus:ring-sacred-gold/20 focus:border-sacred-gold/30 text-sacred-text font-medium transition-all shadow-xs"
               placeholder="Your name"
             />
           </div>
@@ -164,7 +164,7 @@ export default function ProfileSettingsPage() {
             <textarea
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              className="w-full bg-white border border-sacred-gold/10 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-sacred-gold/20 focus:border-sacred-gold/30 text-sacred-text font-serif italic text-lg leading-relaxed h-40 resize-none transition-all shadow-xs placeholder:text-sacred-muted/30"
+              className="w-full bg-white border border-sacred-gold/10 rounded-2xl py-3.5 md:py-4 px-4 md:px-6 focus:outline-none focus:ring-2 focus:ring-sacred-gold/20 focus:border-sacred-gold/30 text-sacred-text font-serif italic text-base md:text-lg leading-relaxed h-32 md:h-40 resize-none transition-all shadow-xs placeholder:text-sacred-muted/30"
               placeholder="Share what drives your spirit..."
             />
           </div>
@@ -186,7 +186,7 @@ export default function ProfileSettingsPage() {
                 value={interestInput}
                 onChange={(e) => setInterestInput(e.target.value)}
                 onKeyDown={addInterest}
-                className="bg-transparent border-none focus:ring-0 text-sm flex-1 min-w-30 placeholder:text-sacred-muted/30 outline-none"
+                className="bg-transparent border-none focus:ring-0 text-sm flex-1 min-w-24 md:min-w-30 placeholder:text-sacred-muted/30 outline-none"
                 placeholder="Yoga, Meditation, Vedas..."
               />
             </div>
@@ -196,7 +196,7 @@ export default function ProfileSettingsPage() {
         <div className="space-y-6">
           <label className="text-[10px] font-bold text-sacred-muted/60 uppercase tracking-widest block mb-4">Social Connections</label>
           <div className="space-y-4">
-            <div className="group flex items-center space-x-3 bg-white border border-sacred-gold/10 rounded-2xl px-6 py-4 transition-all focus-within:ring-2 focus-within:ring-sacred-gold/20 focus-within:border-sacred-gold/30 shadow-xs">
+            <div className="group flex items-center space-x-3 bg-white border border-sacred-gold/10 rounded-2xl px-4 md:px-6 py-3.5 md:py-4 transition-all focus-within:ring-2 focus-within:ring-sacred-gold/20 focus-within:border-sacred-gold/30 shadow-xs">
               <Twitter className="text-sacred-muted group-focus-within:text-sky-500 transition-colors" size={20} />
               <input 
                 placeholder="Twitter profile URL"
@@ -205,7 +205,7 @@ export default function ProfileSettingsPage() {
                 onChange={(e) => setFormData({...formData, socialLinks: {...formData.socialLinks, twitter: e.target.value}})}
               />
             </div>
-            <div className="group flex items-center space-x-3 bg-white border border-sacred-gold/10 rounded-2xl px-6 py-4 transition-all focus-within:ring-2 focus-within:ring-sacred-gold/20 focus-within:border-sacred-gold/30 shadow-xs">
+            <div className="group flex items-center space-x-3 bg-white border border-sacred-gold/10 rounded-2xl px-4 md:px-6 py-3.5 md:py-4 transition-all focus-within:ring-2 focus-within:ring-sacred-gold/20 focus-within:border-sacred-gold/30 shadow-xs">
               <Instagram className="text-sacred-muted group-focus-within:text-pink-500 transition-colors" size={20} />
               <input 
                 placeholder="Instagram profile URL"
@@ -214,7 +214,7 @@ export default function ProfileSettingsPage() {
                 onChange={(e) => setFormData({...formData, socialLinks: {...formData.socialLinks, instagram: e.target.value}})}
               />
             </div>
-            <div className="group flex items-center space-x-3 bg-white border border-sacred-gold/10 rounded-2xl px-6 py-4 transition-all focus-within:ring-2 focus-within:ring-sacred-gold/20 focus-within:border-sacred-gold/30 shadow-xs">
+            <div className="group flex items-center space-x-3 bg-white border border-sacred-gold/10 rounded-2xl px-4 md:px-6 py-3.5 md:py-4 transition-all focus-within:ring-2 focus-within:ring-sacred-gold/20 focus-within:border-sacred-gold/30 shadow-xs">
               <Globe className="text-sacred-muted group-focus-within:text-sacred-gold transition-colors" size={20} />
               <input 
                 placeholder="Personal website URL"
@@ -227,7 +227,7 @@ export default function ProfileSettingsPage() {
         </div>
       </div>
 
-        <div className="pt-8 flex justify-end">
+        <div className="pt-3 md:pt-8 flex justify-end">
         <Button
           onClick={() => updateProfileMutation.mutate({
             name: formData.name,
@@ -238,6 +238,7 @@ export default function ProfileSettingsPage() {
             avatarType: formData.avatar ? 'custom' : undefined,
           })}
           disabled={updateProfileMutation.isPending}
+          className="w-full md:w-auto"
         >
           {updateProfileMutation.isPending && <Loader2 className="animate-spin mr-2" size={18} />}
           Sync Changes

@@ -51,8 +51,8 @@ export default function AdminCommunityDetailPage() {
   if (!community) return <div className="text-center py-20 font-serif italic">Community not found.</div>;
 
   return (
-    <div className="space-y-12 pb-20">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 md:space-y-12 pb-20">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.back()}
@@ -61,23 +61,23 @@ export default function AdminCommunityDetailPage() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-3xl font-serif font-bold text-sacred-text">{community.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-sacred-text">{community.name}</h1>
             <p className="text-sacred-muted">Managing Circle Ecosystem</p>
           </div>
         </div>
-        <div className="flex gap-4">
-           <div className="bg-white px-6 py-2 rounded-2xl border border-sacred-border flex items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 md:flex md:gap-4">
+            <div className="bg-white px-3 md:px-6 py-2 rounded-2xl border border-sacred-border flex items-center gap-2">
               <Users size={16} className="text-sacred-gold" />
               <span className="text-sm font-bold text-sacred-text">{community._count?.members || 0} Members</span>
            </div>
-           <div className="bg-white px-6 py-2 rounded-2xl border border-sacred-border flex items-center gap-2">
+            <div className="bg-white px-3 md:px-6 py-2 rounded-2xl border border-sacred-border flex items-center gap-2">
               <FileText size={16} className="text-sacred-gold" />
               <span className="text-sm font-bold text-sacred-text">{community._count?.posts || 0} Posts</span>
            </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
         {/* Members List */}
         <div className="space-y-6">
           <h3 className="text-xl font-serif font-bold text-sacred-text flex items-center gap-2">

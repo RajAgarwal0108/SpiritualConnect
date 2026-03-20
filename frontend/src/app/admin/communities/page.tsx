@@ -62,13 +62,13 @@ export default function AdminCommunitiesPage() {
   if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-sacred-gold" /></div>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 md:space-y-8">
       <div>
-        <h1 className="text-3xl font-serif font-bold text-sacred-text">Manage Communities</h1>
+        <h1 className="text-2xl md:text-3xl font-serif font-bold text-sacred-text">Manage Communities</h1>
         <p className="text-sacred-muted mt-2">Create and organize spiritual circles.</p>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl border border-sacred-border shadow-sm">
+      <div className="bg-white p-4 md:p-6 rounded-3xl border border-sacred-border shadow-sm">
         <h3 className="text-lg font-bold mb-4">Create New Community</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -98,7 +98,32 @@ export default function AdminCommunitiesPage() {
       </div>
 
       <div className="bg-white rounded-3xl border border-sacred-border shadow-sm overflow-hidden">
-        <table className="w-full text-left">
+        <div className="md:hidden divide-y divide-sacred-border/10">
+          {communities.map((c) => (
+            <div key={c.id} className="p-4 space-y-3">
+              <div className="font-bold text-sacred-text">{c.name}</div>
+              <p className="text-sm text-sacred-muted line-clamp-2">{c.description}</p>
+              <div className="flex items-center justify-end gap-2">
+                <Link
+                  href={`/admin/communities/${c.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sacred-gold/10 text-sacred-gold text-xs font-bold hover:bg-sacred-gold hover:text-white transition-all"
+                >
+                  <ExternalLink size={14} /> Manage
+                </Link>
+                <button
+                  onClick={() => confirm("Are you sure you want to remove this community and all its content?") && deleteMutation.mutate(c.id)}
+                  disabled={deleteMutation.isPending}
+                  className="p-2 text-sacred-muted hover:text-red-500 transition-colors disabled:opacity-50"
+                  title="Delete Community"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <table className="hidden md:table w-full text-left">
           <thead className="bg-sacred-beige/20">
             <tr>
               <th className="px-6 py-4 text-xs font-bold text-sacred-muted uppercase tracking-widest">Community</th>

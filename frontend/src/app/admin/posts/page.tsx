@@ -30,13 +30,59 @@ export default function AdminPostsPage() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+      <div className="p-4 md:p-6 border-b border-gray-100 flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-900">Content Moderation</h2>
         <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold uppercase">
           {posts?.length} Total Posts
         </span>
       </div>
-      <div className="overflow-x-auto">
+
+      <div className="md:hidden divide-y divide-gray-100">
+        {posts?.map((post: any) => (
+          <div key={post.id} className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-bold text-xs shrink-0">
+                  {post.author.name[0]}
+                </div>
+                <div className="text-sm font-bold text-gray-900 truncate">{post.author.name}</div>
+              </div>
+              <div className="text-[10px] text-gray-400 ml-2 shrink-0">{new Date(post.createdAt).toLocaleDateString()}</div>
+            </div>
+
+            <p className="text-sm text-gray-600 line-clamp-3">{post.content}</p>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4 text-gray-500">
+                <div className="flex items-center space-x-1">
+                  <Heart size={14} />
+                  <span className="text-xs">{post._count.likes}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <MessageSquare size={14} />
+                  <span className="text-xs">{post._count.comments}</span>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Link
+                  href={`/profile/${post.authorId}`}
+                  className="text-gray-400 hover:text-indigo-600 transition p-2"
+                >
+                  <ExternalLink size={18} />
+                </Link>
+                <button
+                  onClick={() => confirm("Delete this post?") && deleteMutation.mutate(post.id)}
+                  className="text-gray-400 hover:text-red-600 transition p-2"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>

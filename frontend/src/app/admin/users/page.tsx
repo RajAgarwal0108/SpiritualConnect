@@ -36,13 +36,63 @@ export default function AdminUsersPage() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+      <div className="p-4 md:p-6 border-b border-gray-100 flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-900">Manage Users</h2>
         <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase">
           {users?.length} Total
         </span>
       </div>
-      <table className="w-full">
+
+      <div className="md:hidden divide-y divide-gray-100">
+        {users?.map((user: any) => (
+          <div key={user.id} className="p-4 space-y-3">
+            <Link href={`/profile/${user.id}`} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+              <div className="w-10 h-10 rounded-full bg-indigo-100 overflow-hidden flex items-center justify-center text-indigo-700 font-bold">
+                {user.profile?.avatar ? (
+                  <img
+                    src={getMediaUrl(user.profile.avatar) as string}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user.name[0]
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="font-bold text-gray-900 truncate">{user.name}</div>
+                <div className="text-xs text-gray-500 truncate">{user.email}</div>
+              </div>
+            </Link>
+
+            <div className="flex items-center justify-between">
+              <span className={`px-2 py-1 rounded-lg text-xs font-bold flex items-center space-x-1 w-fit ${
+                user.role === "ADMIN" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700"
+              }`}>
+                {user.role === "ADMIN" && <Shield size={12} />}
+                <span>{user.role}</span>
+              </span>
+              <span className="text-xs text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</span>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => confirm("Delete this user?") && deleteMutation.mutate(user.id)}
+                disabled={user.id === currentUser?.id || deleteMutation.isPending}
+                className={`p-2 transition h-9 w-9 flex items-center justify-center rounded-xl ${
+                  user.id === currentUser?.id
+                    ? "text-gray-200 cursor-not-allowed"
+                    : "text-gray-400 hover:text-red-600 hover:bg-red-50"
+                }`}
+                title={user.id === currentUser?.id ? "You cannot delete yourself" : "Delete user"}
+              >
+                {deleteMutation.isPending ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={18} />}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <table className="hidden md:table w-full">
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">User</th>
