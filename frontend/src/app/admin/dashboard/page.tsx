@@ -33,20 +33,20 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="space-y-12">
-      <div className="flex items-end justify-between">
+    <div className="space-y-6 md:space-y-12">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-4xl font-serif font-semibold text-sacred-text tracking-tight">Ecosystem Health</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-semibold text-sacred-text tracking-tight">Ecosystem Health</h2>
           <p className="text-sacred-muted font-medium mt-1">A high-level view of the spiritual sanctuary.</p>
         </div>
-        <div className="flex items-center space-x-2 bg-sacred-gold/10 text-sacred-gold px-5 py-2.5 rounded-2xl font-semibold text-sm border border-sacred-gold/20">
+        <div className="inline-flex items-center space-x-2 bg-sacred-gold/10 text-sacred-gold px-4 py-2 rounded-2xl font-semibold text-xs md:text-sm border border-sacred-gold/20 w-fit">
           <Activity size={18} />
           <span>System Sync Active</span>
         </div>
       </div>
       
       {/* Top Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
         {[
           { label: "Seekers", val: stats?.userCount, icon: Users, color: "sacred-gold", trend: "+12%" },
           { label: "Reflections", val: stats?.postCount, icon: FileText, color: "emerald", trend: "+5.4%" },
@@ -58,7 +58,7 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-white p-8 rounded-4xl border border-sacred-border shadow-sm hover:shadow-md transition-all group"
+            className="bg-white p-5 md:p-8 rounded-3xl md:rounded-4xl border border-sacred-border shadow-sm hover:shadow-md transition-all group"
           >
             <div className={`w-14 h-14 rounded-2xl bg-${item.color === 'sacred-gold' ? 'sacred-gold/10' : item.color + '-50'} flex items-center justify-center text-${item.color === 'sacred-gold' ? 'sacred-gold' : item.color + '-600'} mb-6 group-hover:scale-110 transition-transform`}>
               <item.icon size={28} />
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
             <div className="flex items-end justify-between">
               <div>
                 <h3 className="text-sacred-muted text-xs font-bold uppercase tracking-[0.15em]">{item.label}</h3>
-                <p className="text-4xl font-serif font-semibold text-sacred-text mt-2">{item.val}</p>
+                <p className="text-3xl md:text-4xl font-serif font-semibold text-sacred-text mt-2">{item.val}</p>
               </div>
               <div className={`flex items-center text-xs font-bold ${item.trend.startsWith('+') ? 'text-emerald-500' : item.trend === 'Normal' ? 'text-sacred-muted' : 'text-rose-500'}`}>
                 {item.trend}
@@ -76,9 +76,9 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Growth Chart */}
-        <div className="lg:col-span-2 bg-white p-8 rounded-4xl border-2 border-gray-50 shadow-sm">
+        <div className="lg:col-span-2 bg-white p-4 md:p-8 rounded-3xl md:rounded-4xl border-2 border-gray-50 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="text-xl font-black text-gray-900">Engagement Flow</h3>
@@ -89,7 +89,7 @@ export default function AdminDashboard() {
               <option>Last 30 Days</option>
             </select>
           </div>
-          <div className="h-72 w-full">
+          <div className="h-56 md:h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={mockData}>
                 <defs>
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Moderation Queue */}
-        <div className="bg-gray-900 rounded-4xl p-8 text-white relative overflow-hidden">
+        <div className="bg-gray-900 rounded-3xl md:rounded-4xl p-5 md:p-8 text-white relative overflow-hidden">
           <div className="relative z-10">
             <h3 className="text-xl font-black mb-2">Gatekeeper Hub</h3>
             <p className="text-gray-400 text-sm font-medium mb-8">Pending actions requiring attention.</p>

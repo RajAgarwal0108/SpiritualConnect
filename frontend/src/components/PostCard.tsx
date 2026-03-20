@@ -176,6 +176,11 @@ export default function PostCard({ post }: PostCardProps) {
     return getMediaUrl(post.media);
   }, [post.media]);
 
+  const isVideoMedia = useMemo(() => {
+    if (!post.media) return false;
+    return /\.(mp4|webm|ogg|mov|quicktime)(\?|$)/i.test(post.media);
+  }, [post.media]);
+
   // Auto-pause video when it leaves the viewport
   useEffect(() => {
     const video = videoRef.current;
@@ -202,12 +207,12 @@ export default function PostCard({ post }: PostCardProps) {
       transition={{ duration: 0.4 }}
     >
       {/* Header */}
-      <div className="p-6 pb-4">
+      <div className="p-4 md:p-6 pb-3 md:pb-4">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
             <Link href={`/profile/${post.author.id}`} className="shrink-0 group">
               <div className="relative">
-                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-sacred-gold/20 to-sacred-gold/40 flex items-center justify-center overflow-hidden border-2 border-white/60 shadow-sm group-hover:shadow-md transition-all duration-300">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-linear-to-br from-sacred-gold/20 to-sacred-gold/40 flex items-center justify-center overflow-hidden border-2 border-white/60 shadow-sm group-hover:shadow-md transition-all duration-300">
                   {post.author.profile?.avatar ? (
                     <img 
                       src={getMediaUrl(post.author.profile.avatar) as string} 
@@ -250,11 +255,11 @@ export default function PostCard({ post }: PostCardProps) {
       </div>
 
       {/* Content */}
-      <div className="px-6 pb-4">
+      <div className="px-4 md:px-6 pb-4">
         {/* Text content (if no media or with media as caption) */}
         {post.content && !post.media && (
           <div className="prose prose-sacred max-w-none">
-            <p className="text-sacred-text leading-relaxed font-serif text-lg">
+            <p className="text-sacred-text leading-[1.9] font-serif text-base md:text-lg">
               {post.content}
             </p>
           </div>
@@ -262,15 +267,15 @@ export default function PostCard({ post }: PostCardProps) {
 
         {/* Media */}
         {post.media && (
-          <div className="rounded-2xl overflow-hidden shadow-md bg-sacred-beige/10">
-            {post.media.match(/\.(mp4|webm|ogg|mov|quicktime)$/i) ? (
+          <div className="rounded-2xl overflow-hidden shadow-md bg-black/90 border border-sacred-border/20">
+            {isVideoMedia ? (
               <video 
                 ref={videoRef}
                 src={mediaUrl || ""} 
                 controls 
                 controlsList="nodownload nofullscreen noremoteplayback nopicture-in-picture nopanning"
                 disablePictureInPicture
-                className="w-full max-h-96 object-cover [&::-webkit-media-controls-fullscreen-button]:hidden"
+                className="w-full h-auto max-h-[70vh] object-contain [&::-webkit-media-controls-fullscreen-button]:hidden"
                 preload="metadata"
                 playsInline
               />
@@ -278,7 +283,7 @@ export default function PostCard({ post }: PostCardProps) {
               <img 
                 src={mediaUrl || ""} 
                 alt="Post media" 
-                className="w-full max-h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="w-full h-auto max-h-[70vh] object-contain cursor-pointer hover:scale-[1.01] transition-transform duration-300"
                 loading="lazy"
               />
             )}
@@ -288,7 +293,7 @@ export default function PostCard({ post }: PostCardProps) {
         {/* Caption (if media exists) */}
         {post.content && post.media && (
           <div className="mt-4 prose prose-sacred max-w-none">
-            <p className="text-sacred-text leading-relaxed font-serif">
+            <p className="text-sacred-text leading-[1.9] font-serif text-base md:text-lg">
               {post.content}
             </p>
           </div>
@@ -296,7 +301,7 @@ export default function PostCard({ post }: PostCardProps) {
       </div>
 
       {/* Actions */}
-      <div className="px-6 py-4 border-t border-sacred-border/20 bg-white/30">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-t border-sacred-border/20 bg-white/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             {/* Like Button */}

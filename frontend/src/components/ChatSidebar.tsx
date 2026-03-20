@@ -42,6 +42,14 @@ interface User {
   isOnline?: boolean;
 }
 
+interface Conversation {
+  room: string;
+  peer: User;
+  latestMessage: string;
+  latestAt: string;
+  isOwnLastMessage: boolean;
+}
+
 export default function ChatSidebar() {
   const { user } = useAuthStore();
   const { setRightSidebar, chatTarget, clearChatTarget, isChatExpanded, toggleChatExpanded } = useUIStore();
@@ -54,13 +62,15 @@ export default function ChatSidebar() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
-  const { data: allUsers = [] } = useQuery<User[]>({
-    queryKey: ["dmUsers"],
+  const { data: conversations = [], refetch: refetchConversations } = useQuery<Conversation[]>({
+    queryKey: ["dmConversations", user?.id],
     queryFn: async () => {
-      const res = await api.get("/users");
+      if (!user?.id) return [];
+      const res = await api.get(`/messages/conversations/${user.id}`);
       return res.data || [];
     },
     enabled: !!user,
+    refetchInterval: 10000,
   });
 
   const { data: onlineUsers = [] } = useQuery<User[]>({
@@ -88,14 +98,12 @@ export default function ChatSidebar() {
     clearChatTarget();
   }, [chatTarget, clearChatTarget]);
 
-  const onlinePeers = (onlineUsers as User[]).map((u) => ({ ...u, isOnline: true }));
-  const offlineFallback = (allUsers as User[]).map((u) => ({ ...u, isOnline: false }));
-  const hasOtherOnline = onlinePeers.some((u) => u.id !== user?.id);
-  const roster = hasOtherOnline ? onlinePeers : offlineFallback;
+  const onlineUserSet = new Set<number>((onlineUsers as User[]).map((u) => u.id));
 
-  const filteredUsers = roster
-    .filter((u: User) => u.id !== user?.id)
-    .filter((u: User) => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredConversations = (conversations || [])
+    .filter((c) => c.peer.id !== user?.id)
+    .filter((c) => c.peer.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => new Date(b.latestAt).getTime() - new Date(a.latestAt).getTime());
 
   useEffect(() => {
     // Choose socket host: use NEXT_PUBLIC_API_URL when available, keep
@@ -140,6 +148,7 @@ export default function ChatSidebar() {
         createdAt: data.createdAt || data.timestamp || new Date().toISOString(),
       };
       setMessages((prev) => [...prev, incoming]);
+      refetchConversations();
     };
 
     socketRef.current?.on("receive_message", handleMessage);
@@ -157,7 +166,7 @@ export default function ChatSidebar() {
     return () => {
       socketRef.current?.off("receive_message", handleMessage);
     };
-  }, [activeChatId, user]);
+  }, [activeChatId, user, refetchConversations]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -175,6 +184,7 @@ export default function ChatSidebar() {
     };
     socketRef.current.emit("send_message", messageData);
     setMessageInput("");
+    refetchConversations();
   };
 
   return (
@@ -260,7 +270,10 @@ export default function ChatSidebar() {
                   : "px-6 space-y-2"
               }`}
             >
-              {filteredUsers.map((u: User) => (
+              {filteredConversations.map((conversation) => {
+                const u = conversation.peer;
+                const isOnline = onlineUserSet.has(u.id);
+                return (
                 <motion.div 
                   key={u.id}
                   layoutId={`user-${u.id}`}
@@ -288,22 +301,32 @@ export default function ChatSidebar() {
                     }`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-1">
+                    <div className="flex justify-between items-baseline mb-1 gap-2">
                       <h4 className={`font-bold text-sacred-text truncate ${isChatExpanded ? "text-lg" : "text-base"}`}>{u.name}</h4>
-                      <span className={`text-[10px] uppercase tracking-tighter ${
-                        u.isOnline ? "text-green-500" : "text-sacred-muted/40"
-                      }`}>
-                        {u.isOnline ? "Online" : "Offline"}
+                      <span className="text-[10px] text-sacred-muted/50 shrink-0">
+                        {new Date(conversation.latestAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
-                    <p className="text-xs text-sacred-muted/70 truncate italic font-medium">Start a thoughtful exchange...</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-green-500" : "bg-sacred-muted/30"}`} />
+                      <p className="text-xs text-sacred-muted/70 truncate italic font-medium">
+                        {conversation.isOwnLastMessage ? "You: " : ""}{conversation.latestMessage}
+                      </p>
+                    </div>
+                    <div className="flex justify-end mt-0.5">
+                      <span className={`text-[10px] uppercase tracking-tighter ${
+                        isOnline ? "text-green-500" : "text-sacred-muted/40"
+                      }`}>
+                        {isOnline ? "Online" : "Offline"}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
-              ))}
-              {filteredUsers.length === 0 && (
+              )})}
+              {filteredConversations.length === 0 && (
                 <div className="py-20 text-center space-y-4 col-span-full">
                   <Sparkles size={32} className="mx-auto text-sacred-gold/20" />
-                  <p className="text-sm italic text-sacred-muted">The silence is deep here.</p>
+                  <p className="text-sm italic text-sacred-muted">No active conversations yet.</p>
                 </div>
               )}
             </motion.div>

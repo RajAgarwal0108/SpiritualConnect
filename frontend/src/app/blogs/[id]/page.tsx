@@ -131,8 +131,12 @@ export default function BlogDetailPage() {
       <article className="space-y-12">
         {/* Cover Image */}
         {blog.coverImage && (
-          <div className="rounded-4xl overflow-hidden aspect-21/9 border border-sacred-gold/10 shadow-2xl shadow-sacred-gold/5">
-            <img src={getMediaUrl(blog.coverImage) || ""} alt={blog.title} className="w-full h-full object-cover" />
+          <div className="rounded-4xl overflow-hidden border border-sacred-gold/10 shadow-2xl shadow-sacred-gold/5 bg-sacred-beige/10 p-2">
+            <img
+              src={getMediaUrl(blog.coverImage) || ""}
+              alt={blog.title}
+              className="w-full h-auto max-h-[80vh] object-contain rounded-3xl"
+            />
           </div>
         )}
 
@@ -213,18 +217,18 @@ export default function BlogDetailPage() {
            </div>
 
            {/* Add Comment Form */}
-           <form onSubmit={handleSubmitComment} className="relative group">
+           <form onSubmit={handleSubmitComment} className="group space-y-4">
               <textarea 
                 placeholder="Share your reflection on these words..."
-                className="w-full bg-white border border-sacred-gold/10 hover:border-sacred-gold/30 rounded-3xl px-8 py-6 min-h-37.5 outline-none focus:ring-4 focus:ring-sacred-gold/5 transition-all font-serif text-lg text-sacred-text shadow-sm"
+                className="w-full bg-white border border-sacred-gold/10 hover:border-sacred-gold/30 rounded-3xl px-5 md:px-8 py-5 md:py-6 min-h-32 md:min-h-37.5 outline-none focus:ring-4 focus:ring-sacred-gold/5 transition-all font-serif text-base md:text-lg text-sacred-text shadow-sm"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
               />
-              <div className="absolute bottom-6 right-6">
+              <div className="flex justify-end">
                 <Button 
                   type="submit" 
                   disabled={!commentText.trim() || commentMutation.isPending}
-                  className="bg-sacred-gold hover:bg-sacred-gold/90 text-white rounded-2xl px-6 py-4 h-auto disabled:opacity-50 transition-all duration-300 shadow-lg shadow-sacred-gold/10"
+                  className="bg-sacred-gold hover:bg-sacred-gold/90 text-white rounded-2xl px-6 py-3.5 h-auto disabled:opacity-50 transition-all duration-300 shadow-lg shadow-sacred-gold/10"
                 >
                   {commentMutation.isPending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} className="mr-2" />}
                   {commentMutation.isPending ? "" : "Share Insight"}
@@ -246,9 +250,9 @@ export default function BlogDetailPage() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.1 }}
-                    className="flex gap-6 p-8 rounded-[35px] bg-white border border-sacred-gold/5 shadow-sm hover:shadow-md transition-shadow"
+                    className="flex gap-4 md:gap-6 p-5 md:p-8 rounded-[28px] md:rounded-[35px] bg-white border border-sacred-gold/5 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <div className="shrink-0 w-12 h-12 rounded-2xl bg-sacred-gold/10 flex items-center justify-center text-sacred-gold border border-sacred-gold/20 overflow-hidden">
+                    <div className="shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-sacred-gold/10 flex items-center justify-center text-sacred-gold border border-sacred-gold/20 overflow-hidden">
                       {comment.author.profile?.avatar ? (
                         <img src={getMediaUrl(comment.author.profile.avatar) || ""} alt={comment.author.name} className="w-full h-full object-cover" />
                       ) : (
@@ -257,12 +261,12 @@ export default function BlogDetailPage() {
                     </div>
                     <div className="space-y-2 flex-1">
                        <div className="flex items-center justify-between">
-                          <h5 className="font-bold text-sacred-text">{comment.author.name}</h5>
+                          <h5 className="font-bold text-sacred-text text-sm md:text-base">{comment.author.name}</h5>
                           <span className="text-[10px] uppercase font-bold text-sacred-muted tracking-widest">
                             {new Date(comment.createdAt).toLocaleDateString()}
                           </span>
                        </div>
-                       <p className="text-sacred-text leading-relaxed font-serif italic text-lg opacity-90">
+                       <p className="text-sacred-text leading-relaxed font-serif italic text-base md:text-lg opacity-90">
                           {comment.content}
                        </p>
                     </div>

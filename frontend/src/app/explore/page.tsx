@@ -93,20 +93,20 @@ export default function ExploreCommunitiesPage() {
   );
 
   return (
-    <main className="min-h-screen bg-sacred-beige/5 pt-12 pb-24 px-6">
-      <div className="max-w-6xl mx-auto space-y-12">
+    <main className="min-h-screen bg-sacred-beige/5 pt-6 md:pt-12 pb-24 px-4 md:px-6">
+      <div className="max-w-6xl mx-auto space-y-8 md:space-y-12">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 text-sacred-gold">
-               <div className="p-2 bg-sacred-gold/10 rounded-xl">
-                 <Compass size={24} />
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8">
+          <div className="space-y-2 md:space-y-4">
+            <div className="flex items-center gap-2 md:gap-3 text-sacred-gold">
+               <div className="p-1.5 md:p-2 bg-sacred-gold/10 rounded-lg md:rounded-xl">
+                 <Compass size={20} className="md:w-6 md:h-6" />
                </div>
-               <span className="text-[10px] uppercase font-bold tracking-[0.3em]">Discovery Hub</span>
+               <span className="text-[9px] md:text-[10px] uppercase font-bold tracking-[0.2em] md:tracking-[0.3em]">Discovery Hub</span>
             </div>
-            <h1 className="text-5xl font-serif font-bold text-sacred-text tracking-tight">Explore the Sanctuary</h1>
-            <p className="text-sacred-muted italic text-lg max-w-sm">Connect with the sangha through shared circles and kindred spirits.</p>
+            <h1 className="text-3xl md:text-5xl font-serif font-bold text-sacred-text tracking-tight">Explore the Sanctuary</h1>
+            <p className="text-sacred-muted italic text-base md:text-lg max-w-sm">Connect with the sangha through shared circles and kindred spirits.</p>
           </div>
 
           <div className="relative w-full md:w-80 group">
@@ -114,7 +114,7 @@ export default function ExploreCommunitiesPage() {
             <input 
               type="text" 
               placeholder={`Search ${activeTab}...`}
-              className="w-full bg-white border border-sacred-border/30 rounded-2xl py-3.5 pl-12 pr-6 outline-none focus:ring-2 focus:ring-sacred-gold/10 transition-all font-serif italic"
+              className="w-full bg-white border border-sacred-border/30 rounded-xl md:rounded-2xl py-3 md:py-3.5 pl-12 pr-6 outline-none focus:ring-2 focus:ring-sacred-gold/10 transition-all font-serif italic text-sm md:text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -122,17 +122,17 @@ export default function ExploreCommunitiesPage() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex gap-4 border-b border-sacred-gold/10 pb-1">
+        <div className="flex gap-2 md:gap-4 border-b border-sacred-gold/10 pb-0.5 md:pb-1 overflow-x-auto no-scrollbar whitespace-nowrap">
           <button 
             onClick={() => setActiveTab("communities")}
-            className={`px-6 py-3 font-serif text-lg relative transition-colors ${activeTab === "communities" ? "text-sacred-gold font-bold" : "text-sacred-muted hover:text-sacred-gold"}`}
+            className={`px-4 md:px-6 py-2 md:py-3 font-serif text-base md:text-lg relative transition-colors ${activeTab === "communities" ? "text-sacred-gold font-bold" : "text-sacred-muted hover:text-sacred-gold"}`}
           >
             Communities
             {activeTab === "communities" && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-sacred-gold" />}
           </button>
           <button 
             onClick={() => setActiveTab("seekers")}
-            className={`px-6 py-3 font-serif text-lg relative transition-colors ${activeTab === "seekers" ? "text-sacred-gold font-bold" : "text-sacred-muted hover:text-sacred-gold"}`}
+            className={`px-4 md:px-6 py-2 md:py-3 font-serif text-base md:text-lg relative transition-colors ${activeTab === "seekers" ? "text-sacred-gold font-bold" : "text-sacred-muted hover:text-sacred-gold"}`}
           >
             Kindred Spirits
             {activeTab === "seekers" && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-sacred-gold" />}
@@ -153,7 +153,7 @@ export default function ExploreCommunitiesPage() {
                   <Loader2 className="animate-spin text-sacred-gold" size={40} />
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                   {filteredCommunities.map((community) => {
                     const joined = isJoined(community.id);
                     return (
@@ -161,51 +161,51 @@ export default function ExploreCommunitiesPage() {
                         key={community.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="group bg-white/60 backdrop-blur-xl rounded-4xl p-8 border border-white shadow-sm hover:shadow-xl hover:shadow-sacred-gold/5 transition-all relative overflow-hidden flex flex-col h-80"
+                        className="group bg-white/60 backdrop-blur-xl rounded-3xl md:rounded-4xl p-5 md:p-8 border border-white shadow-sm hover:shadow-xl hover:shadow-sacred-gold/5 transition-all relative overflow-hidden flex flex-col min-h-56 md:h-80"
                       >
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity scale-150 pointer-events-none">
+                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity scale-150 pointer-events-none hidden md:block">
                           <Users size={120} />
                         </div>
 
-                        <div className="space-y-6 relative flex flex-col h-full">
-                          <div className="flex justify-between items-start">
-                            <div className="w-16 h-16 rounded-3xl bg-sacred-beige flex items-center justify-center text-2xl font-bold text-sacred-gold group-hover:scale-110 transition-transform">
+                        <div className="space-y-4 md:space-y-6 relative flex flex-col h-full">
+                          <div className="flex justify-between items-center md:items-start">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-3xl bg-sacred-beige flex items-center justify-center text-xl md:text-2xl font-bold text-sacred-gold group-hover:scale-110 transition-transform shrink-0">
                               {community.name[0]}
                             </div>
                             <div className="flex flex-col items-end">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-sacred-muted/60">Seekers</span>
-                              <span className="text-xl font-serif font-bold text-sacred-text">
+                              <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-sacred-muted/60">Seekers</span>
+                              <span className="text-base md:text-xl font-serif font-bold text-sacred-text">
                                 {(community.memberCount || community._count?.members || 0).toLocaleString()}
                               </span>
                             </div>
                           </div>
 
-                          <div className="flex-1 space-y-2">
-                             <h3 className="text-2xl font-serif font-bold text-sacred-text">{community.name}</h3>
-                             <p className="text-sm text-sacred-muted italic line-clamp-3 leading-relaxed">
+                          <div className="flex-1 space-y-1 md:space-y-2">
+                             <h3 className="text-xl md:text-2xl font-serif font-bold text-sacred-text leading-tight">{community.name}</h3>
+                             <p className="text-xs md:text-sm text-sacred-muted italic line-clamp-2 md:line-clamp-3 leading-relaxed">
                                {community.description}
                              </p>
                           </div>
 
-                          <div className="pt-4 flex items-center gap-3">
+                          <div className="pt-2 md:pt-4 flex items-center gap-2 md:gap-3">
                             {joined ? (
                               <>
                                 <Link href={`/communities/${community.id}`} className="flex-1">
-                                  <Button className="w-full rounded-full bg-white border border-sacred-gold/20 text-sacred-gold hover:bg-sacred-gold/5 font-bold h-12 flex items-center gap-2">
-                                    Enter Sanctuary <ArrowUpRight size={16} />
+                                  <Button className="w-full rounded-full bg-white border border-sacred-gold/20 text-sacred-gold hover:bg-sacred-gold/5 font-bold h-10 md:h-12 text-xs md:text-base flex items-center gap-1.5 md:gap-2">
+                                    Open <ArrowUpRight className="w-4 h-4" />
                                   </Button>
                                 </Link>
-                                <div className="p-3 bg-green-500/10 text-green-600 rounded-full" title="Already a member">
-                                   <CheckCircle2 size={20} />
+                                <div className="p-2 md:p-3 bg-green-500/10 text-green-600 rounded-full" title="Already a member">
+                                   <CheckCircle2 size={18} className="md:w-5 md:h-5" />
                                 </div>
                               </>
                             ) : (
                               <Button 
                                 onClick={() => joinMutation.mutate(community.id)}
                                 disabled={joinMutation.isPending}
-                                className="flex-1 rounded-full bg-sacred-gold text-white hover:bg-sacred-gold-dark font-bold h-12 shadow-md shadow-sacred-gold/20 flex items-center gap-2"
+                                className="flex-1 rounded-full bg-sacred-gold text-white hover:bg-sacred-gold-dark font-bold h-10 md:h-12 text-xs md:text-base shadow-md shadow-sacred-gold/20 flex items-center gap-1.5 md:gap-2"
                               >
-                                Join Sangha <PlusCircle size={16} />
+                                Join Sangha <PlusCircle className="w-4 h-4" />
                               </Button>
                             )}
                           </div>

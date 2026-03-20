@@ -16,14 +16,14 @@ export default function AdminAnalyticsPage() {
   if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>;
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+    <div className="space-y-4 md:space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+        <div className="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-gray-100">
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
             <TrendingUp size={20} className="text-green-500" />
             <span>User Growth</span>
           </h3>
-          <div className="h-64 bg-gray-50 rounded-2xl flex items-end justify-between px-8 py-6 space-x-2 overflow-hidden">
+          <div className="h-48 md:h-64 bg-gray-50 rounded-2xl flex items-end justify-between px-4 md:px-8 py-4 md:py-6 space-x-2 overflow-hidden">
             {analytics?.map((d: any, i: number) => (
               <div 
                 key={i} 
@@ -39,12 +39,12 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-gray-100">
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
             <BarChart3 size={20} className="text-purple-500" />
             <span>Content Production</span>
           </h3>
-          <div className="h-64 bg-gray-50 rounded-2xl flex items-end justify-between px-8 py-6 space-x-2 overflow-hidden">
+          <div className="h-48 md:h-64 bg-gray-50 rounded-2xl flex items-end justify-between px-4 md:px-8 py-4 md:py-6 space-x-2 overflow-hidden">
             {analytics?.map((d: any, i: number) => (
               <div 
                 key={i} 
@@ -61,18 +61,18 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+      <div className="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-gray-100">
         <h3 className="text-xl font-bold text-gray-900 mb-6">Demographics & Engagement</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="p-6 bg-gray-50 rounded-2xl text-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+          <div className="p-4 md:p-6 bg-gray-50 rounded-2xl text-center">
             <p className="text-gray-500 text-sm font-bold uppercase">Avg Posts / User</p>
             <p className="text-3xl font-black text-indigo-900 mt-2">4.2</p>
           </div>
-          <div className="p-6 bg-gray-50 rounded-2xl text-center">
+          <div className="p-4 md:p-6 bg-gray-50 rounded-2xl text-center">
             <p className="text-gray-500 text-sm font-bold uppercase">Daily Active Users</p>
             <p className="text-3xl font-black text-indigo-900 mt-2">82%</p>
           </div>
-          <div className="p-6 bg-gray-50 rounded-2xl text-center">
+          <div className="p-4 md:p-6 bg-gray-50 rounded-2xl text-center">
             <p className="text-gray-500 text-sm font-bold uppercase">Retention Rate</p>
             <p className="text-3xl font-black text-indigo-900 mt-2">95%</p>
           </div>

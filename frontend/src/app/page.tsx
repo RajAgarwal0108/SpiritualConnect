@@ -73,44 +73,44 @@ export default function Home() {
     <div className="relative bg-sacred-beige/10 text-sacred-text [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {/* --- Main Content --- */}
       <main className="flex-1 relative scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <div className="max-w-5xl mx-auto py-2 space-y-10">
+        <div className="w-full max-w-6xl mx-auto py-2 px-4 md:px-6 lg:px-8 space-y-8 md:space-y-10">
           
           {/* Welcome Hero */}
-          <section className="text-left space-y-4 pt-0">
+          <section className="text-left space-y-4 pt-2 md:pt-0">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-sacred-gold bg-sacred-gold/5 px-4 py-1.5 rounded-full border border-sacred-gold/10">Sanctuary Home</span>
-              <h1 className="font-serif text-6xl font-bold tracking-tight text-sacred-text mt-6 leading-[1.1]">
-                Peace be with you, <br/>
-                <span className="text-sacred-gold">{user?.name?.split(' ')[0] || 'Seeker'}</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-sacred-gold bg-sacred-gold/5 px-3 py-1.5 md:px-4 md:py-1.5 rounded-full border border-sacred-gold/10">Sanctuary Home</span>
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-sacred-text mt-4 md:mt-6 leading-[1.1]">
+                Peace be with you, <br className="md:hidden" />
+                <span className="text-sacred-gold"> {user?.name?.split(' ')[0] || 'Seeker'}</span>
               </h1>
-              <p className="text-sacred-muted italic text-xl mt-4 max-w-lg leading-relaxed">
+              <p className="text-sacred-muted italic text-base md:text-xl mt-3 md:mt-4 max-w-lg leading-relaxed">
                 Your spiritual journey continues. Reconnect with your intention and find your center.
               </p>
             </motion.div>
           </section>
 
           {/* Communities Section */}
-          <section className="space-y-6">
+          <section className="space-y-4 md:space-y-6">
             <div className="flex justify-between items-end">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-sacred-gold/10 rounded-[20px] text-sacred-gold shadow-sm">
-                  <Users size={28} />
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="p-2 md:p-3 bg-sacred-gold/10 rounded-2xl md:rounded-[20px] text-sacred-gold shadow-sm">
+                  <Users className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-serif font-bold tracking-tight">Joined Sanghas</h2>
-                  <p className="text-sm text-sacred-muted italic">Reconnect with your spiritual circles</p>
+                  <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight">Joined Sanghas</h2>
+                  <p className="text-xs md:text-sm text-sacred-muted italic">Reconnect with your spiritual circles</p>
                 </div>
               </div>
-              <Link href="/explore" className="text-sacred-gold hover:text-sacred-text text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors">
-                Explore <Compass size={14} />
+              <Link href="/explore" className="text-sacred-gold hover:text-sacred-text text-[10px] md:text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors pb-1">
+                Explore <Compass size={14} className="w-3 md:w-4" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {joinedCommunities.length > 0 ? (
                 joinedCommunities.slice(0, 4).map((community: any, i: number) => (
                   <motion.div
@@ -121,12 +121,12 @@ export default function Home() {
                     transition={{ delay: i * 0.1 }}
                   >
                     <Link href={`/communities/${community.id}`}>
-                      <div className="bg-white/60 backdrop-blur-xl rounded-4xl p-8 border border-white shadow-sm hover:shadow-2xl hover:shadow-sacred-gold/5 transition-all group flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-3xl bg-sacred-beige flex items-center justify-center text-3xl font-bold text-sacred-gold group-hover:scale-110 transition-transform shadow-sm">
+                      <div className="bg-white/60 backdrop-blur-xl rounded-3xl md:rounded-4xl p-5 md:p-8 border border-white shadow-sm hover:shadow-2xl hover:shadow-sacred-gold/5 transition-all group flex items-center gap-4 md:gap-6">
+                        <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl md:rounded-3xl bg-sacred-beige flex items-center justify-center text-2xl md:text-3xl font-bold text-sacred-gold group-hover:scale-110 transition-transform shadow-sm">
                           {community.name[0]}
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-serif text-2xl font-bold text-sacred-text group-hover:text-sacred-gold transition-colors">{community.name}</h3>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-serif text-xl md:text-2xl font-bold text-sacred-text group-hover:text-sacred-gold transition-colors truncate">{community.name}</h3>
                           <p className="text-[10px] uppercase tracking-widest text-sacred-muted font-bold opacity-60">Active Sanctuary</p>
                         </div>
                         <ArrowRight className="text-sacred-gold opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" size={20} />
@@ -200,25 +200,25 @@ export default function Home() {
           </section> */}
 
           {/* Blogs Section */}
-          <section className="space-y-6 pb-20">
+          <section className="space-y-4 md:space-y-6 pb-20">
             <div className="flex justify-between items-end">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-sacred-gold/10 rounded-[20px] text-sacred-gold shadow-sm">
-                  <BookOpen size={28} />
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="p-2 md:p-3 bg-sacred-gold/10 rounded-2xl md:rounded-[20px] text-sacred-gold shadow-sm">
+                  <BookOpen className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-serif font-bold tracking-tight">Wisdom Chronicles</h2>
-                  <p className="text-sm text-sacred-muted italic">Timeless insights for the modern seeker</p>
+                  <h2 className="text-2xl md:text-3xl font-serif font-bold tracking-tight">Wisdom Chronicles</h2>
+                  <p className="text-xs md:text-sm text-sacred-muted italic">Timeless insights for the modern seeker</p>
                 </div>
               </div>
-              <Link href="/blogs" className="text-sacred-gold hover:text-sacred-text text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors">
-                Library <ArrowRight size={14} />
+              <Link href="/blogs" className="text-sacred-gold hover:text-sacred-text text-[10px] md:text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors pb-1">
+                Library <ArrowRight size={14} className="w-3 md:w-4" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4 md:gap-6">
               {blogsLoading ? (
-                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                <div className="flex flex-col items-center justify-center py-12 md:py-16 gap-4">
                   <Loader2 className="animate-spin text-sacred-gold" size={32} />
                   <p className="text-sacred-muted italic">Gathering the latest chronicles...</p>
                 </div>
@@ -231,34 +231,34 @@ export default function Home() {
                     viewport={{ once: true }}
                   >
                     <Link href={`/blogs/${blog.id}`}>
-                      <div className="group bg-white/40 hover:bg-white backdrop-blur-xl rounded-4xl p-10 border border-white hover:border-sacred-gold/10 shadow-sm transition-all hover:shadow-2xl hover:shadow-sacred-gold/5 relative overflow-hidden flex flex-col gap-6">
-                        <div className="flex flex-col md:flex-row md:items-center gap-10">
-                          <div className="flex-1 space-y-4">
-                            <div className="flex items-center gap-3">
+                      <div className="group bg-white/40 hover:bg-white backdrop-blur-xl rounded-3xl md:rounded-4xl p-6 md:p-10 border border-white hover:border-sacred-gold/10 shadow-sm transition-all hover:shadow-2xl hover:shadow-sacred-gold/5 relative overflow-hidden flex flex-col gap-4 md:gap-6">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-10">
+                          <div className="flex-1 space-y-3 md:space-y-4">
+                            <div className="flex items-center gap-2 md:gap-3">
                               {blog.category && (
-                                <span className="text-[9px] uppercase font-black tracking-widest text-white bg-sacred-gold px-3 py-1 rounded-md">
+                                <span className="text-[8px] md:text-[9px] uppercase font-black tracking-widest text-white bg-sacred-gold px-2.5 py-1 md:px-3 rounded-md">
                                   {blog.category}
                                 </span>
                               )}
                               {blog.readTime && (
-                                <span className="text-[10px] uppercase font-bold text-sacred-muted/40 tracking-widest">
+                                <span className="text-[9px] md:text-[10px] uppercase font-bold text-sacred-muted/40 tracking-widest">
                                   {blog.readTime}
                                 </span>
                               )}
                             </div>
-                            <h3 className="text-3xl font-serif font-bold group-hover:text-sacred-gold transition-colors leading-snug">
+                            <h3 className="text-xl md:text-3xl font-serif font-bold group-hover:text-sacred-gold transition-colors leading-snug">
                               {blog.title}
                             </h3>
-                            <p className="text-sacred-muted italic text-lg leading-relaxed line-clamp-2 font-serif opacity-80">
+                            <p className="text-sacred-muted italic text-sm md:text-lg leading-relaxed line-clamp-2 md:line-clamp-3 font-serif opacity-80">
                               {blog.excerpt}
                             </p>
                           </div>
-                          <div className="shrink-0">
+                          <div className="shrink-0 flex justify-end md:block">
                             <Button
                               variant="ghost"
-                              className="rounded-full w-14 h-14 p-0 items-center justify-center border-sacred-gold/20 text-sacred-gold hover:bg-sacred-gold hover:text-white transition-all duration-500"
+                              className="rounded-full w-10 h-10 md:w-14 md:h-14 p-0 items-center justify-center border-sacred-gold/20 text-sacred-gold hover:bg-sacred-gold hover:text-white transition-all duration-500"
                             >
-                              <ArrowRight size={24} />
+                              <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
                             </Button>
                           </div>
                         </div>

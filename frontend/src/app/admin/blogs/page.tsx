@@ -43,14 +43,14 @@ export default function AdminBlogsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12">
+    <div className="max-w-4xl mx-auto space-y-6 md:space-y-12">
       <div>
-        <h1 className="text-4xl font-serif font-bold text-sacred-text">Publish Wisdom</h1>
+        <h1 className="text-2xl md:text-4xl font-serif font-bold text-sacred-text">Publish Wisdom</h1>
         <p className="text-sacred-muted mt-2">Share deep insights with the global sanctuary.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white p-10 rounded-4xl border border-sacred-border shadow-sm space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <form onSubmit={handleSubmit} className="bg-white p-4 md:p-10 rounded-3xl md:rounded-4xl border border-sacred-border shadow-sm space-y-5 md:space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs font-bold text-sacred-muted uppercase tracking-widest px-1">
               <Type size={14} /> Title
@@ -106,7 +106,7 @@ export default function AdminBlogsPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs font-bold text-sacred-muted uppercase tracking-widest px-1">
               <Clock size={14} /> Read Time
