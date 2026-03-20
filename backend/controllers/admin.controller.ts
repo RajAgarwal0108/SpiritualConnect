@@ -5,12 +5,29 @@ import type { AuthRequest } from "../middlewares/auth.middleware";
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {
     const users = await prisma.user.findMany({
-      include: { profile: true },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isPrivate: true,
+        createdAt: true,
+        deactivatedAt: true,
+        profile: {
+          select: {
+            avatar: true,
+            bio: true,
+            socialLinks: true,
+            interests: true,
+          },
+        },
+      },
     });
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch users", error });
+    console.error("getAllUsers error", error);
+    res.status(500).json({ message: "Failed to fetch users", error: (error as Error).message });
   }
 };
 

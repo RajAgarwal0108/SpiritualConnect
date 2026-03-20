@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuthStore } from "@/store/globalStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/services/api";
+import api, { uploadApi } from "@/services/api";
 import { Loader2, Camera, Check, Twitter, Instagram, Globe, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
@@ -18,7 +18,7 @@ const avatars = [
 ];
 
 export default function ProfileSettingsPage() {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState({
@@ -57,8 +57,9 @@ export default function ProfileSettingsPage() {
       const res = await api.put(`/users/${user?.id}`, data);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["userProfile", user?.id] });
+      setUser(data);
       alert("Profile updated successfully!");
     },
   });
@@ -131,7 +132,7 @@ export default function ProfileSettingsPage() {
                 const fd = new FormData();
                 fd.append("file", file);
                 try {
-                  const res = await api.post("/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                  const res = await uploadApi.post("/upload", fd);
                   const url = res.data.url;
                   setFormData((prev) => ({ ...prev, avatar: url }));
                 } catch (err) {

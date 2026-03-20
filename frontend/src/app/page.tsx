@@ -150,7 +150,7 @@ export default function Home() {
           </section>
 
           {/* Courses Section */}
-          <section className="space-y-6">
+          {/* <section className="space-y-6">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-sacred-gold/10 rounded-xl text-sacred-gold">
@@ -197,7 +197,7 @@ export default function Home() {
                 </motion.div>
               ))}
             </div>
-          </section>
+          </section> */}
 
           {/* Blogs Section */}
           <section className="space-y-8 pb-32">

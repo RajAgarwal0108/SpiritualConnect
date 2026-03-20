@@ -7,8 +7,12 @@ import Link from "next/link";
 import { LayoutDashboard, Users, FileText, AlertTriangle, BarChart3, LogOut, BookOpen, PlusSquare, GraduationCap, Compass } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const router = useRouter();
+
+  const handleExitPortal = () => {
+    router.push("/");
+  };
 
   useEffect(() => {
     if (user && user.role !== "ADMIN") {
@@ -39,10 +43,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Compass size={20} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
             <span>Communities</span>
           </Link>
-          <Link href="/admin/courses" className="flex items-center space-x-3 p-3.5 rounded-2xl hover:bg-sacred-gold/5 text-sacred-muted hover:text-sacred-gold transition-all group font-medium">
+          {/* <Link href="/admin/courses" className="flex items-center space-x-3 p-3.5 rounded-2xl hover:bg-sacred-gold/5 text-sacred-muted hover:text-sacred-gold transition-all group font-medium">
             <GraduationCap size={20} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
             <span>Courses</span>
-          </Link>
+          </Link> */}
           <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-sacred-muted/50">System</div>
           <Link href="/admin/posts" className="flex items-center space-x-3 p-3.5 rounded-2xl hover:bg-sacred-gold/5 text-sacred-muted hover:text-sacred-gold transition-all group font-medium">
             <FileText size={20} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
@@ -58,7 +62,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </Link>
         </nav>
         <div className="p-6 border-t border-sacred-border">
-          <button onClick={logout} className="flex items-center space-x-3 p-3.5 w-full rounded-2xl hover:bg-red-50 text-sacred-muted hover:text-red-500 transition-all font-medium">
+          <button
+            onClick={handleExitPortal}
+            className="flex items-center space-x-3 p-3.5 w-full rounded-2xl hover:bg-red-50 text-sacred-muted hover:text-red-500 transition-all font-medium"
+          >
             <LogOut size={20} strokeWidth={1.5} />
             <span>Exit Portal</span>
           </button>

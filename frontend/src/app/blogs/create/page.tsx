@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/services/api";
+import api, { uploadApi } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { Loader2, ArrowLeft, Image as ImageIcon, Send, X } from "lucide-react";
 import { getMediaUrl } from "@/lib/media";
@@ -51,11 +51,7 @@ export default function CreateBlogPage() {
     body.append("file", file);
 
     try {
-      const res = await api.post("/upload", body, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await uploadApi.post("/upload", body);
       setFormData({ ...formData, coverImage: res.data.url });
     } catch (error) {
       console.error("Upload failed:", error);

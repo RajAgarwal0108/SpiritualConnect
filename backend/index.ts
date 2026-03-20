@@ -18,6 +18,9 @@ import path from "path";
 import fs from "fs";
 import { StorageService } from "./services/storage.service";
 import { registerUserSocket, unregisterUserSocket, getOnlineUserIds } from "./services/presence.service";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -135,6 +138,15 @@ app.get("/api/health", async (req, res) => {
 app.get("/", (req, res) => {
   res.redirect(302, "/api/health");
 });
+
+// Swagger Documentation
+try {
+  const swaggerDocument = YAML.load(path.join(__dirname, "docs/swagger.yaml"));
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  console.log("Swagger UI available at /api-docs");
+} catch (err) {
+  console.error("Failed to load swagger.yaml:", err);
+}
 
 // File Upload Endpoint
 app.post("/api/upload", (req, res, next) => {

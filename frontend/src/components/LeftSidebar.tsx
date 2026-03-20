@@ -29,7 +29,7 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
     { name: "Explore People", href: "/explore/people", icon: Users },
     { name: "Communities", href: "/explore", icon: Compass, exact: true },
     { name: "AI Assistant", href: "/ai-assistant", icon: Sparkles },
-    { name: "Courses", href: "/courses", icon: BookOpen },
+    // { name: "Courses", href: "/courses", icon: BookOpen },
     { name: "Blogs", href: "/blogs", icon: FileText },
     { name: "Settings", href: "/settings/account", icon: Sliders },
   ];
