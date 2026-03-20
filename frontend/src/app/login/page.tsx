@@ -29,7 +29,10 @@ export default function LoginPage() {
     sessionStorage.setItem("google_oauth_redirect_uri", redirectUri);
 
     const params = new URLSearchParams({
+
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1036446468794-rtvblsp74l5vvdco42rvr6lm4enrqtos.apps.googleusercontent.com",
+
+
       redirect_uri: redirectUri,
       response_type: "code",
       scope: "email profile",
