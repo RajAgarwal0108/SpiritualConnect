@@ -57,14 +57,14 @@ export default function ExplorePeople() {
     <div className="flex h-[calc(100vh-64px)] overflow-hidden relative bg-sacred-beige/10 text-sacred-text">
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto no-scrollbar py-12 px-8">
-            <div className="max-w-4xl mx-auto space-y-12">
-                <div className="text-center space-y-3">
-                    <h1 className="font-serif text-4xl font-bold tracking-tight text-sacred-text">Seekers of Resonance</h1>
-                    <p className="text-sacred-muted italic">Connect with like-minded souls on the same spiritual path.</p>
+        <main className="flex-1 overflow-y-auto no-scrollbar py-6 md:py-12 px-4 md:px-8">
+            <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
+                <div className="text-center space-y-2 md:space-y-3">
+                    <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-sacred-text">Seekers of Resonance</h1>
+                    <p className="text-sacred-muted italic text-sm md:text-base px-2">Connect with like-minded souls on the same spiritual path.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-20">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 pb-20">
                     {seekers.map((seeker: Seeker) => {
                         const isFollowing = seeker.followers?.some(f => f.followerId === user?.id);
                         

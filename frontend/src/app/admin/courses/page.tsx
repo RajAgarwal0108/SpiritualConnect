@@ -47,18 +47,18 @@ export default function AdminCoursesPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12">
+    <div className="max-w-4xl mx-auto space-y-6 md:space-y-12">
       <div className="flex items-center gap-4">
         <div className="p-3 bg-sacred-gold/10 rounded-2xl text-sacred-gold">
           <GraduationCap size={32} />
         </div>
         <div>
-          <h1 className="text-4xl font-serif font-bold text-sacred-text">Initiate Course</h1>
+          <h1 className="text-2xl md:text-4xl font-serif font-bold text-sacred-text">Initiate Course</h1>
           <p className="text-sacred-muted mt-2">Design a structured path for seekers to follow.</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white p-10 rounded-4xl border border-sacred-border shadow-sm space-y-8">
+      <form onSubmit={handleSubmit} className="bg-white p-4 md:p-10 rounded-3xl md:rounded-4xl border border-sacred-border shadow-sm space-y-5 md:space-y-8">
         <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs font-bold text-sacred-muted uppercase tracking-widest px-1">
               <Type size={14} /> Course Title
@@ -84,7 +84,7 @@ export default function AdminCoursesPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs font-bold text-sacred-muted uppercase tracking-widest px-1">
               <DollarSign size={14} /> Energy Exchange (Price)
@@ -125,7 +125,7 @@ export default function AdminCoursesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs font-bold text-sacred-muted uppercase tracking-widest px-1">
               <Tag size={14} /> Category

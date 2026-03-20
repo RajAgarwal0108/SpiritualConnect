@@ -49,22 +49,22 @@ export default function Header() {
 
   return (
     <header className="glass-panel sticky top-0 z-50 border-b-0">
-      <div className="max-w-8xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-8xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
         {/* Left: Menu Toggle + Logo + Essence */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           {!isLeftSidebarOpen && !isAuthPage && (
             <button 
               onClick={toggleLeftSidebar}
-              className={`p-2 rounded-xl transition-colors flex items-center justify-center hover:bg-sacred-beige text-sacred-muted`}
+              className="p-1.5 md:p-2 rounded-xl transition-colors flex items-center justify-center hover:bg-sacred-beige text-sacred-muted"
               title="Open Navigation"
             >
-              <Menu size={20} />
+              <Menu size={20} className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           )}
           
-          <Link href="/" className="flex items-center font-serif text-xl font-semibold text-sacred-gold tracking-tight">
-            <img src="/file.svg" alt="SpiritualConnect" className="w-8 h-8 mr-3" />
-            <span>SpiritualConnect</span>
+          <Link href="/" className="flex items-center font-serif text-lg md:text-xl font-semibold text-sacred-gold tracking-tight shrink-0">
+            <img src="/file.svg" alt="SpiritualConnect" className="w-6 h-6 md:w-8 md:h-8 mr-2 md:mr-3" />
+            <span className="hidden sm:inline">SpiritualConnect</span>
           </Link>
           <span className="hidden lg:block h-4 w-px bg-sacred-border" />
           <span className="hidden lg:block text-[10px] uppercase tracking-[0.2em] text-sacred-muted font-bold">A Sanctuary</span>
@@ -72,15 +72,15 @@ export default function Header() {
 
         {/* Right: Actions */}
         {mounted ? (
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3">
             {/* Chat Toggle Button */}
             {user && !isAuthPage && (
               <button 
                 onClick={toggleRightSidebar}
-                className={`p-2 rounded-xl transition-all duration-300 flex items-center justify-center ${isRightSidebarOpen ? 'bg-sacred-gold text-white shadow-lg shadow-sacred-gold/20' : 'hover:bg-sacred-gold/10 text-sacred-muted hover:text-sacred-gold'}`}
+                className={`p-1.5 md:p-2 rounded-xl transition-all duration-300 flex items-center justify-center ${isRightSidebarOpen ? 'bg-sacred-gold text-white shadow-lg shadow-sacred-gold/20' : 'hover:bg-sacred-gold/10 text-sacred-muted hover:text-sacred-gold'}`}
                 title="Conversations"
               >
-                <MessageCircle size={20} className={isRightSidebarOpen ? 'scale-110' : ''} />
+                <MessageCircle className={`w-5 h-5 md:w-6 md:h-6 ${isRightSidebarOpen ? 'scale-110' : ''}`} />
                 <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.2em] hidden md:inline">Conversations</span>
               </button>
             )}
@@ -88,16 +88,16 @@ export default function Header() {
             {user?.role === 'ADMIN' && (
               <Link 
                 href="/admin/dashboard" 
-                className="p-2 rounded-xl hover:bg-sacred-gold/10 text-sacred-gold transition-all duration-300 flex items-center justify-center group"
+                className="p-1.5 md:p-2 rounded-xl hover:bg-sacred-gold/10 text-sacred-gold transition-all duration-300 flex items-center justify-center group"
                 title="Admin Dashboard"
               >
-                <ShieldCheck size={20} className="group-hover:scale-110" />
+                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110" />
                 <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.2em] hidden lg:inline">Admin</span>
               </Link>
             )}
 
             {user ? (
-              <div className="relative flex items-center space-x-3 pl-2 border-l border-sacred-border" ref={menuRef}>
+              <div className="relative flex items-center space-x-2 md:space-x-3 pl-2 border-l border-sacred-border" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen((s) => !s)}
                   className="flex items-center gap-2 focus:outline-none"
@@ -108,10 +108,10 @@ export default function Header() {
                     <img
                       src={getMediaUrl(user.profile.avatar) as string}
                       alt={user.name}
-                      className="w-8 h-8 rounded-full object-cover border border-sacred-border"
+                      className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover border border-sacred-border"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-sacred-gold/10 flex items-center justify-center text-sacred-gold font-bold text-[10px] border border-sacred-gold/20">
+                    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-sacred-gold/10 flex items-center justify-center text-sacred-gold font-bold text-[10px] border border-sacred-gold/20">
                       {user.name[0]}
                     </div>
                   )}
@@ -146,18 +146,18 @@ export default function Header() {
               </div>
             ) : (
               pathname === "/login" ? (
-                <Link href="/register" className="text-sm font-bold bg-sacred-gold/10 text-sacred-gold hover:bg-sacred-gold hover:text-white px-4 py-2 rounded-full transition-all duration-300 ml-2">
+                <Link href="/register" className="text-[12px] md:text-sm font-bold bg-sacred-gold/10 text-sacred-gold hover:bg-sacred-gold hover:text-white px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-all duration-300 ml-1 md:ml-2 whitespace-nowrap">
                   Sign Up
                 </Link>
               ) : (
-                <Link href="/login" className="text-sm font-bold bg-sacred-gold/10 text-sacred-gold hover:bg-sacred-gold hover:text-white px-4 py-2 rounded-full transition-all duration-300 ml-2">
+                <Link href="/login" className="text-[12px] md:text-sm font-bold bg-sacred-gold/10 text-sacred-gold hover:bg-sacred-gold hover:text-white px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-all duration-300 ml-1 md:ml-2 whitespace-nowrap">
                   Log in
                 </Link>
               )
             )}
           </div>
         ) : (
-          <div className="h-8" />
+          <div className="h-8 md:h-10 w-8 md:w-10" />
         )}
       </div>
     </header>
