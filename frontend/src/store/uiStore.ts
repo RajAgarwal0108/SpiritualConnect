@@ -22,7 +22,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  isLeftSidebarOpen: true,
+  isLeftSidebarOpen: false,
   isRightSidebarOpen: false,
   isChatExpanded: false,
   chatTarget: null,

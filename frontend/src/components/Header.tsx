@@ -49,7 +49,7 @@ export default function Header() {
 
   return (
     <header className="glass-panel sticky top-0 z-50 border-b-0">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-8xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Left: Menu Toggle + Logo + Essence */}
         <div className="flex items-center space-x-4">
           {!isLeftSidebarOpen && !isAuthPage && (
@@ -145,9 +145,15 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              <Link href="/login" className="text-sm font-medium text-sacred-muted hover:text-sacred-gold transition-colors pl-2">
-                Log in
-              </Link>
+              pathname === "/login" ? (
+                <Link href="/register" className="text-sm font-bold bg-sacred-gold/10 text-sacred-gold hover:bg-sacred-gold hover:text-white px-4 py-2 rounded-full transition-all duration-300 ml-2">
+                  Sign Up
+                </Link>
+              ) : (
+                <Link href="/login" className="text-sm font-bold bg-sacred-gold/10 text-sacred-gold hover:bg-sacred-gold hover:text-white px-4 py-2 rounded-full transition-all duration-300 ml-2">
+                  Log in
+                </Link>
+              )
             )}
           </div>
         ) : (

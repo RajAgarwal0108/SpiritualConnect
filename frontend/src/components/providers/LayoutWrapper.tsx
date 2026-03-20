@@ -20,7 +20,8 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
   const isAdminPage = pathname.startsWith("/admin");
-  const showSidebar = !isAuthPage && !isAdminPage;
+  const isAuthenticated = !!user;
+  const showSidebar = !isAuthPage && !isAdminPage && isAuthenticated;
 
   // Lock body scroll when chat is expanded
   useEffect(() => {
