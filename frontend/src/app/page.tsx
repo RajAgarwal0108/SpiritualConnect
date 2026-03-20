@@ -70,13 +70,13 @@ export default function Home() {
   }
 
   return (
-    <div className="relative bg-sacred-beige/10 text-sacred-text">
+    <div className="relative bg-sacred-beige/10 text-sacred-text [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {/* --- Main Content --- */}
-      <main className="flex-1 relative scroll-smooth">
-        <div className="max-w-4xl mx-auto py-4 space-y-20">
+      <main className="flex-1 relative scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="max-w-5xl mx-auto py-2 space-y-10">
           
           {/* Welcome Hero */}
-          <section className="text-left space-y-4 pt-4">
+          <section className="text-left space-y-4 pt-0">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -94,7 +94,7 @@ export default function Home() {
           </section>
 
           {/* Communities Section */}
-          <section className="space-y-8">
+          <section className="space-y-6">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-sacred-gold/10 rounded-[20px] text-sacred-gold shadow-sm">
@@ -200,7 +200,7 @@ export default function Home() {
           </section> */}
 
           {/* Blogs Section */}
-          <section className="space-y-8 pb-32">
+          <section className="space-y-6 pb-20">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-sacred-gold/10 rounded-[20px] text-sacred-gold shadow-sm">

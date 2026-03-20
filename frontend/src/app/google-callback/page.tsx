@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import api from "@/services/api";
 import { useAuthStore } from "@/store/globalStore";
+import { Loader2 } from "lucide-react";
 
 export default function GoogleCallback() {
   const searchParams = useSearchParams();
@@ -46,5 +47,11 @@ export default function GoogleCallback() {
       });
   }, [code, router]); // ✅ correct dependencies
 
-  return <div>Verifying with Google...</div>;
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-sacred-beige text-sacred-text">
+      <Loader2 className="h-10 w-10 animate-spin text-sacred-gold mb-4" />
+      <h2 className="font-serif text-2xl">Authenticating...</h2>
+      <p className="text-sacred-muted mt-2">Please wait while we connect your soul to the sanctuary.</p>
+    </div>
+  );
 }
