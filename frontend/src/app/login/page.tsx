@@ -21,7 +21,13 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-    const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL || `${window.location.origin}/google-callback`;
+    const redirectUri =
+      process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL ||
+      `${window.location.origin}/google-callback`;
+
+    // Persist the redirect URI so callback and token exchange use the exact same value.
+    sessionStorage.setItem("google_oauth_redirect_uri", redirectUri);
+
     const params = new URLSearchParams({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_placeholder",
       redirect_uri: redirectUri,

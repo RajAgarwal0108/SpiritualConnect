@@ -43,10 +43,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Compass size={20} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
             <span>Communities</span>
           </Link>
-          <Link href="/admin/courses" className="flex items-center space-x-3 p-3.5 rounded-2xl hover:bg-sacred-gold/5 text-sacred-muted hover:text-sacred-gold transition-all group font-medium">
+          {/* <Link href="/admin/courses" className="flex items-center space-x-3 p-3.5 rounded-2xl hover:bg-sacred-gold/5 text-sacred-muted hover:text-sacred-gold transition-all group font-medium">
             <GraduationCap size={20} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
             <span>Courses</span>
-          </Link>
+          </Link> */}
           <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-sacred-muted/50">System</div>
           <Link href="/admin/posts" className="flex items-center space-x-3 p-3.5 rounded-2xl hover:bg-sacred-gold/5 text-sacred-muted hover:text-sacred-gold transition-all group font-medium">
             <FileText size={20} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />

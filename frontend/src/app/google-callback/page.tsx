@@ -18,7 +18,9 @@ export default function GoogleCallback() {
 
     hasHandledCode.current = true;
 
+    const persistedRedirectUri = sessionStorage.getItem("google_oauth_redirect_uri");
     const redirectUri =
+      persistedRedirectUri ||
       process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL ||
       window.location.origin + "/google-callback";
 
@@ -38,6 +40,9 @@ export default function GoogleCallback() {
         console.error("Login Failed", errorMessage, err);
 
         router.replace(`/login?error=${encodeURIComponent(errorMessage)}`);
+      })
+      .finally(() => {
+        sessionStorage.removeItem("google_oauth_redirect_uri");
       });
   }, [code, router]); // ✅ correct dependencies
 
