@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuthStore } from "@/store/globalStore";
 import { usePathname } from "next/navigation";
-import { User, LogOut, Home, Compass, MessageCircle, Bell, Sparkles, BookOpen, ShieldCheck, Users, Search, X, MessageSquare, Menu } from "lucide-react";
+import { User, LogOut, Home, Compass, MessageCircle, Bell, Sparkles, BookOpen, ShieldCheck, Users, Search, X, MessageSquare, Menu, HeartHandshake } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
@@ -93,6 +93,17 @@ export default function Header() {
               >
                 <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110" />
                 <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.2em] hidden lg:inline">Admin</span>
+              </Link>
+            )}
+
+            {user && (
+              <Link 
+                href="/profile/guidance" 
+                className="p-1.5 md:p-2 rounded-xl hover:bg-sacred-gold/10 text-sacred-gold transition-all duration-300 flex items-center justify-center group"
+                title="Guidance Dashboard"
+              >
+                <HeartHandshake className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110" />
+                <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.2em] hidden lg:inline">Guidance</span>
               </Link>
             )}
 

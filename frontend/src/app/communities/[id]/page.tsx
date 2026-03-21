@@ -350,10 +350,7 @@ export default function CommunityHall() {
         </div>
       </main>
 
-      {/* Right Sidebar */}
-      <aside className="hidden xl:block w-80 shrink-0 h-full border-l border-sacred-border/50">
-        <ChatSidebar />
-      </aside>
+      {/* Right Sidebar Removed to avoid redundancy with the floating message bar */}
     </div>
   );
 }

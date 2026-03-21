@@ -5,8 +5,9 @@ import { useParams } from "next/navigation";
 import api from "@/services/api";
 import { getMediaUrl } from "@/lib/media";
 import { useAuthStore } from "@/store/globalStore";
-import { Loader2, Calendar, Edit, UserPlus, UserCheck, Sparkles, LogOut, Bookmark } from "lucide-react";
+import { Loader2, Calendar, Edit, UserPlus, UserCheck, Sparkles, LogOut, Bookmark, HeartHandshake, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Post, UserProfile } from "@/types";
 import { motion } from "framer-motion";
 import { SACRED_EASE, FADE_IN_UP } from "@/lib/motion-config";
@@ -101,41 +102,80 @@ export default function ProfilePage() {
               </div>
               <div className="flex space-x-3 md:space-x-4 md:mb-4 w-full md:w-auto">
                 {isOwnProfile ? (
-                  <div className="flex items-center space-x-3 w-full md:w-auto">
-                    <a href="/settings/profile">
+                  <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <Link href="/settings/profile" className="flex-1 md:flex-none">
                       <Button variant="secondary" className="w-full md:w-auto flex items-center space-x-2">
                         <Edit size={16} />
                         <span className="text-sm font-medium">Refine Presence</span>
                       </Button>
-                    </a>
+                    </Link>
+                    <Link 
+                      href={profile.guideStatus === 'APPROVED' ? "/profile/guidance" : "/guidance/apply"} 
+                      className="flex-1 md:flex-none"
+                    >
+                      <Button variant="ghost" className="w-full md:w-auto border-sacred-gold/30 text-sacred-gold hover:bg-sacred-gold/5">
+                        <HeartHandshake size={16} className="mr-2" />
+                        <span className="text-sm font-medium">
+                          {profile.guideStatus === 'APPROVED' ? (
+                            'Guidance Dashboard'
+                          ) : profile.guideStatus === 'PENDING' ? (
+                            'Application Pending'
+                          ) : (
+                            'Become a Guide'
+                          )}
+                        </span>
+                      </Button>
+                    </Link>
                   </div>
                 ) : currentUser && (
-                  <Button 
-                    onClick={() => followMutation.mutate()}
-                    variant={profile._count.followers > 0 ? "secondary" : "primary"}
-                    className="min-w-35 w-full md:w-auto"
-                  >
-                    {followMutation.isPending ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : profile._count.followers > 0 ? (
-                      <><UserCheck size={18} className="mr-2" /><span>Connected</span></>
-                    ) : (
-                      <><UserPlus size={18} className="mr-2" /><span>Connect</span></>
+                  <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <Button 
+                      onClick={() => followMutation.mutate()}
+                      variant={profile._count.followers > 0 ? "secondary" : "primary"}
+                      className="min-w-35 flex-1 md:flex-none"
+                    >
+                      {followMutation.isPending ? (
+                        <Loader2 size={18} className="animate-spin" />
+                      ) : profile._count.followers > 0 ? (
+                        <><UserCheck size={18} className="mr-2" /><span>Connected</span></>
+                      ) : (
+                        <><UserPlus size={18} className="mr-2" /><span>Connect</span></>
+                      )}
+                    </Button>
+                    
+                    {profile.isGuide && profile.guideStatus === 'APPROVED' && (
+                      <Link href={`/guidance/${profile.id}`} className="flex-1 md:flex-none">
+                        <Button variant="primary" className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700">
+                          <HeartHandshake size={18} className="mr-2" />
+                          <span>Request Guidance</span>
+                        </Button>
+                      </Link>
                     )}
-                  </Button>
+                  </div>
                 )}
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl md:text-4xl font-light text-sacred-text tracking-tight">{profile.name}</h1>
-                <span className="bg-sacred-beige px-3 py-1 rounded-full text-[10px] text-sacred-gold font-bold uppercase tracking-widest mt-1">Seeks Wisdom</span>
+                {profile.isGuide && profile.guideStatus === 'APPROVED' ? (
+                  <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
+                    <ShieldCheck size={12} className="text-indigo-600" />
+                    <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest leading-none">Verified Guide</span>
+                  </div>
+                ) : (
+                  <span className="bg-sacred-beige px-3 py-1 rounded-full text-[10px] text-sacred-gold font-bold uppercase tracking-widest mt-1">Seeks Wisdom</span>
+                )}
               </div>
               
-              {profile.profile?.bio && (
+              {profile.isGuide && profile.guideStatus === 'APPROVED' && profile.guideTitle && (
+                <p className="text-indigo-600 font-medium text-sm md:text-base">{profile.guideTitle}</p>
+              )}
+              
+              {(profile.guideBio || profile.profile?.bio) && (
                 <p className="text-sacred-muted text-base md:text-lg font-serif italic leading-relaxed max-w-2xl py-2 line-clamp-3">
-                  "{profile.profile.bio}"
+                  "{profile.guideBio || profile.profile?.bio}"
                 </p>
               )}
               

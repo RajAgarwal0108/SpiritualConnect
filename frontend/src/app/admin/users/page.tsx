@@ -6,6 +6,7 @@ import { Loader2, Trash2, UserCheck, Shield, ExternalLink } from "lucide-react";
 import { getMediaUrl } from "@/lib/media";
 import Link from "next/link";
 import { useAuthStore } from "@/store/globalStore";
+import { toast } from "react-hot-toast";
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
@@ -29,6 +30,20 @@ export default function AdminUsersPage() {
     },
     onError: (error: any) => {
       alert(error.response?.data?.message || "Failed to delete user");
+    }
+  });
+
+  const promoteMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const res = await api.patch(`/admin/guides/${userId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+      toast?.success?.("User promoted to guide");
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || "Failed to promote user");
     }
   });
 
@@ -138,18 +153,29 @@ export default function AdminUsersPage() {
                 {new Date(user.createdAt).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 text-right">
-                <button 
-                  onClick={() => confirm("Delete this user?") && deleteMutation.mutate(user.id)}
-                  disabled={user.id === currentUser?.id || deleteMutation.isPending}
-                  className={`p-2 transition h-10 w-10 flex items-center justify-center rounded-xl ${
-                    user.id === currentUser?.id 
-                      ? 'text-gray-200 cursor-not-allowed' 
-                      : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
-                  }`}
-                  title={user.id === currentUser?.id ? "You cannot delete yourself" : "Delete user"}
-                >
-                  {deleteMutation.isPending ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={20} />}
-                </button>
+                <div className="flex items-center justify-end gap-2">
+                  {!user.isGuide && (
+                    <button
+                      onClick={() => confirm("Make this user a Guide?") && promoteMutation.mutate(user.id)}
+                      disabled={promoteMutation.isPending}
+                      className="px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-sm font-medium"
+                    >
+                      Make Guide
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => confirm("Delete this user?") && deleteMutation.mutate(user.id)}
+                    disabled={user.id === currentUser?.id || deleteMutation.isPending}
+                    className={`p-2 transition h-10 w-10 flex items-center justify-center rounded-xl ${
+                      user.id === currentUser?.id 
+                        ? 'text-gray-200 cursor-not-allowed' 
+                        : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                    }`}
+                    title={user.id === currentUser?.id ? "You cannot delete yourself" : "Delete user"}
+                  >
+                    {deleteMutation.isPending ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={20} />}
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
