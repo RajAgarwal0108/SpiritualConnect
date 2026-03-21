@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FileText, AlertTriangle, BarChart3, LogOut, BookOpen, PlusSquare, GraduationCap, Compass } from "lucide-react";
+import { LayoutDashboard, Users, FileText, AlertTriangle, BarChart3, LogOut, BookOpen, PlusSquare, GraduationCap, Compass, HeartHandshake } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user } = useAuthStore();
@@ -15,6 +15,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/users", label: "Seekers", icon: Users },
+    { href: "/admin/guides", label: "Guides", icon: HeartHandshake },
     { href: "/admin/communities", label: "Communities", icon: Compass },
     { href: "/admin/posts", label: "Reflections", icon: FileText },
     { href: "/admin/reports", label: "Moderation", icon: AlertTriangle },

@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/services/api";
-import { Home as HomeIcon, Users, Compass, Sliders, ChevronLeft, BookOpen, Sparkles, FileText, LucideIcon } from "lucide-react";
+import { Home as HomeIcon, Users, Compass, Sliders, ChevronLeft, BookOpen, Sparkles, FileText, LucideIcon, HeartHandshake } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/globalStore";
 import { motion } from "framer-motion";
@@ -28,6 +28,8 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
     { name: "Sacred Home", href: "/", icon: HomeIcon },
     { name: "Explore People", href: "/explore/people", icon: Users },
     { name: "Communities", href: "/explore", icon: Compass, exact: true },
+    { name: "My Guidance", href: "/profile/guidance", icon: HeartHandshake },
+    { name: "Spiritual Guides", href: "/guidance", icon: Users },
     { name: "AI Assistant", href: "/ai-assistant", icon: Sparkles },
     // { name: "Courses", href: "/courses", icon: BookOpen },
     { name: "Blogs", href: "/blogs", icon: FileText },

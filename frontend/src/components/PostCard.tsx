@@ -1,7 +1,7 @@
 "use client";
 
 import { Post } from "@/types";
-import { Heart, MessageCircle, Share2, Bookmark, Send, Trash2 } from "lucide-react";
+import { Heart, MessageSquare, Share2, Bookmark, Send, Trash2, MoreHorizontal, ChevronDown, ChevronUp, Sparkles, MessageCircle } from "lucide-react";
 import { getMediaUrl } from "@/lib/media";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
@@ -201,7 +201,7 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <motion.div 
-      className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 overflow-hidden transition-all duration-300 hover:shadow-lg hover:bg-white/90"
+      className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 overflow-hidden transition-all duration-300 hover:shadow-lg hover:bg-white/90 group/post"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -229,37 +229,48 @@ export default function PostCard({ post }: PostCardProps) {
               </div>
             </Link>
             <div>
-              <Link 
-                href={`/profile/${post.author.id}`}
-                className="font-semibold text-sacred-text hover:text-sacred-gold transition-colors duration-200"
-              >
-                {post.author.name}
-              </Link>
-              <div className="flex items-center gap-2 mt-1">
-                {post.community && (
-                  <Link 
-                    href={`/communities/${post.community.id}`}
-                    className="text-sm text-sacred-muted hover:text-sacred-gold transition-colors duration-200"
-                  >
-                    in {post.community.name}
-                  </Link>
+              <div className="flex items-center gap-2">
+                <Link 
+                  href={`/profile/${post.author.id}`}
+                  className="font-semibold text-sacred-text hover:text-sacred-gold transition-colors duration-200"
+                >
+                  {post.author.name}
+                </Link>
+                {post.author.role === 'ADMIN' && (
+                   <div className="flex items-center gap-1">
+                      <div className="w-4 h-4 rounded-full bg-sacred-gold/10 border border-sacred-gold/20 flex items-center justify-center">
+                        <Sparkles size={10} className="text-sacred-gold" />
+                      </div>
+                   </div>
                 )}
                 <span className="text-sacred-muted/60">•</span>
                 <span className="text-sm text-sacred-muted">
                   {formattedTime}
                 </span>
               </div>
+              {post.community && (
+                <div className="mt-0.5">
+                   <Link 
+                    href={`/communities/${post.community.id}`}
+                    className="text-sm text-sacred-muted hover:text-sacred-gold transition-colors duration-200"
+                  >
+                    in {post.community.name}
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
+          <button className="text-sacred-muted hover:text-sacred-gold transition-colors">
+            <MoreHorizontal size={20} />
+          </button>
         </div>
       </div>
 
       {/* Content */}
       <div className="px-4 md:px-6 pb-4">
-        {/* Text content (if no media or with media as caption) */}
-        {post.content && !post.media && (
-          <div className="prose prose-sacred max-w-none">
-            <p className="text-sacred-text leading-[1.9] font-serif text-base md:text-lg">
+        {post.content && (
+          <div className="prose prose-sacred max-w-none mb-4">
+            <p className="text-sacred-text leading-[1.8] font-serif text-base md:text-lg">
               {post.content}
             </p>
           </div>
@@ -267,41 +278,30 @@ export default function PostCard({ post }: PostCardProps) {
 
         {/* Media */}
         {post.media && (
-          <div className="rounded-2xl overflow-hidden shadow-md bg-black/90 border border-sacred-border/20">
+          <div className="rounded-2xl overflow-hidden shadow-md bg-black/95 border border-sacred-border/20 group/media relative">
             {isVideoMedia ? (
               <video 
                 ref={videoRef}
                 src={mediaUrl || ""} 
                 controls 
-                controlsList="nodownload nofullscreen noremoteplayback nopicture-in-picture nopanning"
-                disablePictureInPicture
-                className="w-full h-auto max-h-[70vh] object-contain [&::-webkit-media-controls-fullscreen-button]:hidden"
+                className="w-full h-auto max-h-[70vh] object-contain"
                 preload="metadata"
                 playsInline
               />
             ) : (
               <img 
                 src={mediaUrl || ""} 
-                alt="Post media" 
-                className="w-full h-auto max-h-[70vh] object-contain cursor-pointer hover:scale-[1.01] transition-transform duration-300"
+                alt="Sacred Media" 
+                className="w-full h-auto max-h-[70vh] object-contain transition-transform duration-500 group-hover/media:scale-[1.01]"
                 loading="lazy"
               />
             )}
           </div>
         )}
-
-        {/* Caption (if media exists) */}
-        {post.content && post.media && (
-          <div className="mt-4 prose prose-sacred max-w-none">
-            <p className="text-sacred-text leading-[1.9] font-serif text-base md:text-lg">
-              {post.content}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Actions */}
-      <div className="px-4 md:px-6 py-3 md:py-4 border-t border-sacred-border/20 bg-white/30">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-t border-sacred-border/10 bg-white/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             {/* Like Button */}
@@ -316,7 +316,7 @@ export default function PostCard({ post }: PostCardProps) {
                 transition={{ duration: 0.3 }}
               >
                 <Heart 
-                  size={24} 
+                  size={22} 
                   className={`transition-all duration-200 ${
                     isLiked 
                       ? "text-red-500 fill-red-500" 
@@ -338,7 +338,7 @@ export default function PostCard({ post }: PostCardProps) {
               onClick={() => setShowComments(!showComments)}
               className="group flex items-center gap-2 outline-none"
             >
-              <MessageCircle size={24} className="text-sacred-text transition-all group-hover:text-sacred-gold group-hover:scale-110" />
+              <MessageCircle size={22} className="text-sacred-text transition-all group-hover:text-sacred-gold group-hover:scale-110" />
               {commentCount > 0 && (
                 <span className="text-sm font-semibold text-sacred-text">{commentCount}</span>
               )}
@@ -346,7 +346,7 @@ export default function PostCard({ post }: PostCardProps) {
 
             {/* Share Button */}
             <button className="group flex items-center gap-2 outline-none">
-              <Share2 size={24} className="text-sacred-text transition-all group-hover:text-sacred-gold group-hover:scale-110" />
+              <Share2 size={22} className="text-sacred-text transition-all group-hover:text-sacred-gold group-hover:scale-110" />
             </button>
           </div>
 
@@ -362,7 +362,7 @@ export default function PostCard({ post }: PostCardProps) {
               transition={{ duration: 0.3 }}
             >
               <Bookmark 
-                size={24} 
+                size={22} 
                 className={`transition-all duration-200 ${
                   isBookmarked 
                     ? "text-sacred-gold fill-sacred-gold" 
@@ -389,120 +389,80 @@ export default function PostCard({ post }: PostCardProps) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="border-t border-sacred-border/20 bg-white/40"
+            className="border-t border-sacred-border/10 bg-white/40"
           >
-            <div className="px-6 py-4 max-h-96 overflow-y-auto space-y-4">
+            <div className="px-4 md:px-6 py-4 space-y-4">
               {/* Existing Comments */}
-              {localComments && localComments.length > 0 ? (
-                (() => {
-                  const renderThread = (comment: any, depth = 0) => {
-                    const children = localComments.filter((c: any) => c.parentId === comment.id);
-                    return (
-                      <div key={comment.id} className="space-y-3" style={{ marginLeft: depth ? 44 : 0 }}>
-                        <div className="flex gap-3">
-                          <Link href={`/profile/${comment.author.id}`} className="shrink-0">
-                            <div className={`${depth ? "w-7 h-7" : "w-8 h-8"} rounded-xl bg-sacred-gold/10 flex items-center justify-center border border-sacred-gold/20 hover:border-sacred-gold/40 transition-all duration-200`}>
-                              {comment.author.profile?.avatar ? (
-                                <img 
-                                  src={getMediaUrl(comment.author.profile.avatar) as string} 
-                                  alt={comment.author.name} 
-                                  className="w-full h-full object-cover rounded-xl" 
-                                />
-                              ) : (
-                                <span className={`${depth ? "text-[10px]" : "text-xs"} font-bold text-sacred-gold`}>
-                                  {comment.author.name[0]}
-                                </span>
-                              )}
-                            </div>
-                          </Link>
-                          <div className="flex-1">
-                            <div className={`${depth ? "bg-white/60 border border-sacred-border/30" : "bg-white/70"} rounded-2xl px-4 py-3`}>
-                              <Link href={`/profile/${comment.author.id}`} className={`${depth ? "text-xs" : "text-sm"} font-semibold text-sacred-text hover:text-sacred-gold transition-colors duration-200`}>
-                                {comment.author.name}
-                              </Link>
-                              <p className="text-sm text-sacred-text/90 mt-1 font-serif">{comment.content}</p>
-                            </div>
-                            <div className="flex items-center gap-4 mt-2 px-4">
-                              <span className={`${depth ? "text-[11px]" : "text-xs"} text-sacred-muted`}>
-                                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                              </span>
-                              <button 
-                                className={`${depth ? "text-[11px]" : "text-xs"} text-sacred-muted hover:text-sacred-gold font-semibold transition-colors duration-200`}
-                                onClick={() => {
-                                  setReplyingTo({ id: comment.id, name: comment.author.name });
-                                  setCommentText(`@${comment.author.name} `);
-                                  commentInputRef.current?.focus();
-                                }}
-                              >
-                                Reply
-                              </button>
-                              {user?.id === comment.author.id && (
-                                <button
-                                  className={`${depth ? "text-[11px]" : "text-xs"} text-red-400 hover:text-red-600 font-semibold transition-colors duration-200 flex items-center gap-1`}
-                                  onClick={() => deleteCommentMutation.mutate(comment.id)}
-                                  disabled={deleteCommentMutation.isPending}
-                                >
-                                  <Trash2 size={12} /> Delete
-                                </button>
-                              )}
-                            </div>
-                          </div>
+              <div className="space-y-4">
+                {localComments && localComments.length > 0 ? (
+                  localComments.filter(c => !c.parentId).map((comment: any) => (
+                    <div key={comment.id} className="flex gap-3 group/comment">
+                      <Link href={`/profile/${comment.author.id}`} className="shrink-0">
+                        <div className="w-9 h-9 rounded-xl overflow-hidden border border-sacred-border/20 shadow-sm">
+                           {getMediaUrl(comment.author.profile?.avatar) ? (
+                             <img src={getMediaUrl(comment.author.profile?.avatar) as string} className="w-full h-full object-cover" />
+                           ) : (
+                             <div className="w-full h-full bg-sacred-gold/10 flex items-center justify-center font-bold text-sacred-gold">
+                               {comment.author.name[0]}
+                             </div>
+                           )}
                         </div>
-                        {children.map((child: any) => renderThread(child, depth + 1))}
+                      </Link>
+                      <div className="flex-1 bg-white/50 rounded-2xl p-3 border border-white/60">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Link href={`/profile/${comment.author.id}`} className="font-semibold text-sm text-sacred-text hover:text-sacred-gold transition-colors">
+                            {comment.author.name}
+                          </Link>
+                          <span className="text-[10px] text-sacred-muted italic">
+                            {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p className="text-sm text-sacred-text/90 leading-relaxed font-serif">
+                           {comment.content}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2">
+                           <button className="text-[11px] font-semibold text-sacred-gold/70 hover:text-sacred-gold transition-colors">
+                             Reply
+                           </button>
+                           {user?.id === comment.author.id && (
+                             <button onClick={() => deleteCommentMutation.mutate(comment.id)} className="text-[11px] font-semibold text-red-400 hover:text-red-500 transition-colors">
+                               Delete
+                             </button>
+                           )}
+                        </div>
                       </div>
-                    );
-                  };
-                  return localComments
-                    .filter((c: any) => !c.parentId)
-                    .map((c: any) => renderThread(c));
-                })()
-              ) : (
-                <p className="text-sm text-sacred-muted italic text-center py-8 font-serif">
-                  No comments yet. Share your thoughts and start the conversation.
-                </p>
-              )}
-
-              {/* Comment Input */}
-              <form onSubmit={handleCommentSubmit} className="flex flex-col gap-3 pt-4 border-t border-white/30">
-                {replyingTo && (
-                  <div className="flex items-center gap-2 text-xs text-sacred-muted/80 bg-white/60 border border-sacred-border/40 rounded-xl px-3 py-2">
-                    Replying to <span className="font-semibold text-sacred-text">{replyingTo.name}</span>
-                    <button
-                      type="button"
-                      className="text-sacred-muted hover:text-sacred-gold ml-auto"
-                      onClick={() => setReplyingTo(null)}
-                    >
-                      Cancel
-                    </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-8 text-center">
+                     <p className="text-sm text-sacred-muted italic font-serif">Awaiting your resonance...</p>
                   </div>
                 )}
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-sacred-gold/10 flex items-center justify-center shrink-0 border border-sacred-gold/20">
-                    <span className="text-xs font-bold text-sacred-gold">Y</span>
-                  </div>
-                  <div className="flex-1 flex gap-2">
-                    <input
-                      ref={commentInputRef}
-                      type="text"
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      placeholder="Share your insights"
-                      className="flex-1 bg-white/70 border border-white/50 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sacred-gold/30 focus:border-sacred-gold/50 transition-all duration-200 font-serif placeholder:italic"
-                      disabled={createCommentMutation.isPending}
-                    />
-                    <motion.button
-                      type="submit"
-                      disabled={!commentText.trim() || createCommentMutation.isPending}
-                      className="p-2.5 rounded-2xl bg-sacred-gold text-white hover:bg-sacred-gold-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {createCommentMutation.isPending ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Send size={16} />
-                      )}
-                    </motion.button>
-                  </div>
+              </div>
+
+              {/* Comment Input */}
+              <form onSubmit={handleCommentSubmit} className="flex gap-3 pt-4 border-t border-white/40">
+                <div className="w-9 h-9 rounded-xl bg-sacred-gold/10 flex items-center justify-center shrink-0 border border-sacred-gold/20">
+                  <span className="text-xs font-bold text-sacred-gold uppercase">
+                    {user?.name?.[0] || 'Y'}
+                  </span>
+                </div>
+                <div className="flex-1 flex gap-2">
+                  <input
+                    ref={commentInputRef}
+                    type="text"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Share your insights..."
+                    className="flex-1 bg-white/70 border border-white/50 rounded-2xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sacred-gold/20 focus:border-sacred-gold/40 transition-all font-serif placeholder:italic"
+                  />
+                  <button 
+                     type="submit"
+                     disabled={!commentText.trim() || createCommentMutation.isPending}
+                     className="p-2 text-sacred-gold hover:scale-110 active:scale-95 transition-all disabled:opacity-30"
+                  >
+                    <Send size={20} />
+                  </button>
                 </div>
               </form>
             </div>
@@ -512,3 +472,4 @@ export default function PostCard({ post }: PostCardProps) {
     </motion.div>
   );
 }
+
