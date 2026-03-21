@@ -46,11 +46,10 @@ describe("Admin Routes", () => {
         data: {
           email: "testuser@test.com",
           password: "hashedpassword",
-          username: "testuser",
+          name: "testuser",
           role: "USER",
           profile: {
             create: {
-              fullName: "Test User",
               bio: "Test bio",
             }
           }
@@ -58,10 +57,18 @@ describe("Admin Routes", () => {
       });
       testUserId = testUser.id;
 
+      const testCommunity = await prisma.community.create({
+        data: {
+          name: "Test Community",
+          description: "Test description",
+        }
+      });
+
       const testPost = await prisma.post.create({
         data: {
           content: "Test post content",
           authorId: testUser.id,
+          communityId: testCommunity.id,
         }
       });
       testPostId = testPost.id;

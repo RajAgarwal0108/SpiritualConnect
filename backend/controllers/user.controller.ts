@@ -22,6 +22,10 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
         role: true,
         createdAt: true,
         profile: true,
+        isGuide: true,
+        guideStatus: true,
+        guideTitle: true,
+        guideBio: true,
         communities: {
           include: {
             community: true
