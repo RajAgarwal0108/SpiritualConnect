@@ -113,7 +113,7 @@ export default function ProfilePage() {
                       href={profile.guideStatus === 'APPROVED' ? "/profile/guidance" : "/guidance/apply"} 
                       className="flex-1 md:flex-none"
                     >
-                      <Button variant="outline" className="w-full md:w-auto border-sacred-gold/30 text-sacred-gold hover:bg-sacred-gold/5">
+                      <Button variant="ghost" className="w-full md:w-auto border-sacred-gold/30 text-sacred-gold hover:bg-sacred-gold/5">
                         <HeartHandshake size={16} className="mr-2" />
                         <span className="text-sm font-medium">
                           {profile.guideStatus === 'APPROVED' ? (

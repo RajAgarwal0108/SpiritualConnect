@@ -157,7 +157,7 @@ export default function AdminUsersPage() {
                   {!user.isGuide && (
                     <button
                       onClick={() => confirm("Make this user a Guide?") && promoteMutation.mutate(user.id)}
-                      disabled={promoteMutation.isLoading}
+                      disabled={promoteMutation.isPending}
                       className="px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-sm font-medium"
                     >
                       Make Guide

@@ -236,7 +236,7 @@ export default function PostCard({ post }: PostCardProps) {
                 >
                   {post.author.name}
                 </Link>
-                {post.author.role === 'ADMIN' && (
+                 {'role' in post.author && post.author.role === 'ADMIN' && (
                    <div className="flex items-center gap-1">
                       <div className="w-4 h-4 rounded-full bg-sacred-gold/10 border border-sacred-gold/20 flex items-center justify-center">
                         <Sparkles size={10} className="text-sacred-gold" />
