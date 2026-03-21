@@ -114,6 +114,118 @@ async function main() {
     }
   }
   console.log("Diverse demo users and community posts created.");
+
+  // Add community memberships for demo users
+  for (const u of demoUsers) {
+    const user = await prisma.user.findUnique({ where: { email: u.email } });
+    if (user && yogaComm) {
+      await prisma.communityMembership.upsert({
+        where: { userId_communityId: { userId: user.id, communityId: yogaComm.id } },
+        update: {},
+        create: { userId: user.id, communityId: yogaComm.id, role: "MEMBER" }
+      });
+    }
+  }
+
+  // Create sample blogs
+  const blogSamples = [
+    {
+      title: "Journey of Dharma",
+      excerpt: "Reflections on right action and inner duty.",
+      content: "An extended reflection inspired by the Bhagavad Gita on performing duty without attachment.",
+      category: "Philosophy",
+      readTime: "6 min",
+      coverImage: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe"
+    },
+    {
+      title: "The Song of Devotion",
+      excerpt: "Cultivating a heart that sings for the Beloved.",
+      content: "Practical practices to deepen bhakti and bring more tenderness into life.",
+      category: "Devotion",
+      readTime: "4 min",
+      coverImage: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1"
+    }
+  ];
+
+  // Attach blogs to demo users (if present)
+  const arjuna = await prisma.user.findUnique({ where: { email: "arjuna@vibes.com" } });
+  const mirabai = await prisma.user.findUnique({ where: { email: "mirabai@bhakti.com" } });
+
+  if (arjuna) {
+    const exists = await prisma.blog.findFirst({ where: { title: blogSamples[0].title, authorId: arjuna.id } });
+    if (!exists) {
+      const blog = await prisma.blog.create({
+        data: {
+          ...blogSamples[0],
+          authorId: arjuna.id
+        }
+      });
+      await prisma.blogComment.createMany({
+        data: [
+          { content: "This really helped me refocus my priorities.", blogId: blog.id, authorId: arjuna.id },
+        ]
+      });
+    }
+  }
+
+  if (mirabai) {
+    const exists = await prisma.blog.findFirst({ where: { title: blogSamples[1].title, authorId: mirabai.id } });
+    if (!exists) {
+      const blog = await prisma.blog.create({
+        data: {
+          ...blogSamples[1],
+          authorId: mirabai.id
+        }
+      });
+      await prisma.blogComment.createMany({
+        data: [
+          { content: "A gentle reminder to open the heart daily.", blogId: blog.id, authorId: mirabai.id }
+        ]
+      });
+    }
+  }
+
+  // Create sample courses with modules and lessons
+  const courseExists = await prisma.course.findFirst({ where: { title: "Foundations of Presence" } });
+  if (!courseExists) {
+    const course = await prisma.course.create({
+      data: {
+        title: "Foundations of Presence",
+        description: "A gentle course on building daily presence through breath, body, and simple rituals.",
+        instructor: "Sacred Guide",
+        price: "Free",
+        duration: "2 weeks",
+        thumbnail: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        modules: {
+          create: [
+            {
+              title: "Breath & Awareness",
+              order: 1,
+              lessons: {
+                create: [
+                  { title: "Intro to Breathwork", content: "Foundational breathing practices.", order: 1 },
+                  { title: "Daily 5-minute Practice", content: "Short routine to anchor your day.", order: 2 }
+                ]
+              }
+            },
+            {
+              title: "Embodied Rituals",
+              order: 2,
+              lessons: {
+                create: [
+                  { title: "Morning Ritual", content: "A simple sequence to greet the day.", order: 1 },
+                  { title: "Evening Reflection", content: "A short journaling prompt.", order: 2 }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    });
+    console.log("Sample course created:", course.title);
+  }
+
+  console.log("Additional blogs, comments, courses, and memberships seeded.");
 }
 
 main()

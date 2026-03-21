@@ -15,6 +15,10 @@ const userProfileSelect = {
   role: true,
   createdAt: true,
   profile: true,
+  isGuide: true,
+  guideStatus: true,
+  guideTitle: true,
+  guideBio: true,
 };
 
 const parseMinutes = (value: string | undefined, fallback: number) => {
