@@ -6,6 +6,7 @@ import { Loader2, Trash2, UserCheck, Shield, ExternalLink } from "lucide-react";
 import { getMediaUrl } from "@/lib/media";
 import Link from "next/link";
 import { useAuthStore } from "@/store/globalStore";
+import { toast } from "react-hot-toast";
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
