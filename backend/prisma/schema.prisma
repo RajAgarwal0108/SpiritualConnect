@@ -10,31 +10,43 @@ datasource db {
 }
 
 model User {
-  id            Int                   @id @default(autoincrement())
-  email         String                @unique
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
   password      String
   name          String
-  role          Role                  @default(USER)
-  isPrivate     Boolean               @default(false)
+  role          Role      @default(USER)
+  isPrivate     Boolean   @default(false)
   deactivatedAt DateTime?
-  isVerified    Boolean               @default(false)
+  isVerified    Boolean   @default(false)
   emailVerified DateTime?
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
-  blogs         Blog[]
-  blogComments  BlogComment[]
-  bookmarks     Bookmark[]
-  comments      Comment[]
-  communities   CommunityMembership[]
-  enrollments   CourseEnrollment[]
-  following     Follow[]              @relation("following")
-  followers     Follow[]              @relation("followers")
-  likes         Like[]
-  posts         Post[]
-  profile       Profile?
-  RefreshToken  RefreshToken[]
-  reportsMade   Report[]              @relation("reporter")
-  verificationTokens VerificationToken[] @relation("UserVerificationTokens")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Guidance Feature Fields
+  isGuide               Boolean           @default(false)
+  guideStatus           GuideStatus       @default(NONE)
+  phoneNumber           String?
+  guideTitle            String?
+  guideBio              String?
+  guideApplication      GuideApplication?
+  guidanceUserSessions  GuidanceSession[] @relation("GuidanceSeeker")
+  guidanceGuideSessions GuidanceSession[] @relation("GuidanceGuide")
+  GuidanceMessage       GuidanceMessage[]
+
+  blogs              Blog[]
+  blogComments       BlogComment[]
+  bookmarks          Bookmark[]
+  comments           Comment[]
+  communities        CommunityMembership[]
+  enrollments        CourseEnrollment[]
+  following          Follow[]              @relation("following")
+  followers          Follow[]              @relation("followers")
+  likes              Like[]
+  posts              Post[]
+  profile            Profile?
+  RefreshToken       RefreshToken[]
+  reportsMade        Report[]              @relation("reporter")
+  verificationTokens VerificationToken[]   @relation("UserVerificationTokens")
 }
 
 model Profile {
@@ -249,22 +261,76 @@ model RefreshToken {
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
 model VerificationToken {
   id        Int      @id @default(autoincrement())
   token     String   @unique
-  type      String   // "email_verification" | "password_reset"
+  type      String // "email_verification" | "password_reset"
   expiresAt DateTime
   used      Boolean  @default(false)
 
-  userId    Int
-  user      User     @relation("UserVerificationTokens", fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  user   User @relation("UserVerificationTokens", fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+}
+
+enum GuideStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NONE
+}
+
+enum SessionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
 }
 
 enum Role {
   USER
   MODERATOR
   ADMIN
+}
+
+model GuideApplication {
+  id          String      @id @default(cuid())
+  userId      Int         @unique
+  reportText  String
+  documentUrl String?
+  status      GuideStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GuidanceSession {
+  id              String            @id @default(cuid())
+  userId          Int
+  guideId         Int
+  status          SessionStatus     @default(PENDING)
+  isDetailsShared Boolean           @default(false)
+  mood            String?           // Optional mood tracking at start
+  goal            String?           // Core session intent
+  summary         String?           // Post-session wisdom from guide
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation("GuidanceSeeker", fields: [userId], references: [id], onDelete: Cascade)
+  guide           User              @relation("GuidanceGuide", fields: [guideId], references: [id], onDelete: Cascade)
+  messages        GuidanceMessage[]
+
+  @@unique([userId, guideId])
+}
+
+model GuidanceMessage {
+  id        String          @id @default(cuid())
+  sessionId String
+  senderId  Int
+  content   String
+  type      String          @default("TEXT") // TEXT, ROUTINE, QUESTION, PROFILE_SHARE
+  metadata  Json?           // Structured data for rich cards
+  createdAt DateTime        @default(now())
+  session   GuidanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender    User            @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }

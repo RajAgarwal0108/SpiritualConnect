@@ -10,6 +10,9 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
         id: true,
         email: true,
         name: true,
+        isGuide: true,
+        guideTitle: true,
+        guideStatus: true,
         role: true,
         isPrivate: true,
         createdAt: true,
@@ -186,3 +189,120 @@ export const deleteCommunity = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Failed to delete community", error });
   }
 };
+
+// Guidance Admin Controllers
+
+export const getGuideApplications = async (req: AuthRequest, res: Response) => {
+  try {
+    const applications = await prisma.guideApplication.findMany({
+      where: { status: 'PENDING' },
+      include: {
+        user: { select: { name: true, email: true } }
+      }
+    });
+    res.json(applications);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch guide applications' });
+  }
+};
+
+export const getGuidesOverview = async (req: AuthRequest, res: Response) => {
+  try {
+    const guides = await prisma.user.findMany({
+      where: { isGuide: true },
+      select: {
+        id: true,
+        name: true,
+        guideTitle: true,
+        guideBio: true,
+        profile: { select: { avatar: true } },
+        // Include accepted sessions and the seeker user info
+        guidanceGuideSessions: {
+          where: { status: 'ACCEPTED' },
+          select: { user: { select: { id: true, name: true, profile: { select: { avatar: true } } } } }
+        },
+        _count: { select: { guidanceGuideSessions: true } }
+      }
+    });
+
+    const total = await prisma.user.count({ where: { isGuide: true } });
+
+    res.json({ total, guides });
+  } catch (error) {
+    console.error('Failed to fetch guides overview', error);
+    res.status(500).json({ error: 'Failed to fetch guides' });
+  }
+};
+
+export const promoteUserToGuide = async (req: AuthRequest, res: Response) => {
+  try {
+    const userIdParam = req.params.userId as string;
+    const userId = parseInt(userIdParam);
+    if (isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+
+    const { guideTitle, guideBio } = req.body;
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        isGuide: true,
+        guideStatus: 'APPROVED',
+        guideTitle: guideTitle || null,
+        guideBio: guideBio || null,
+      }
+    });
+
+    res.json({ message: 'User promoted to guide', user: { id: updated.id, name: updated.name, guideTitle: updated.guideTitle } });
+  } catch (error) {
+    console.error('Failed to promote user to guide', error);
+    res.status(500).json({ error: 'Failed to promote user' });
+  }
+};
+
+export const reviewGuideApplication = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const { status } = req.body; // 'APPROVED' | 'REJECTED'
+
+    if (status !== 'APPROVED' && status !== 'REJECTED') {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const application = await prisma.guideApplication.update({
+      where: { id },
+      data: { status }
+    });
+
+    await prisma.user.update({
+      where: { id: application.userId },
+      data: {
+        isGuide: status === 'APPROVED',
+        guideStatus: status,
+      }
+    });
+
+    res.json({ message: `Application \${status}`, application });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to review application' });
+  }
+};
+
+export const revokeGuideStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.params.userId as string;
+
+    await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: {
+        isGuide: false,
+        guideStatus: 'NONE'
+      }
+    });
+
+    res.json({ message: 'Guide status revoked successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to revoke guide status' });
+  }
+};
+

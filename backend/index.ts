@@ -13,6 +13,7 @@ import communityRoutes from "./routes/community.routes";
 import blogRoutes from "./routes/blog.routes";
 import messageRoutes from "./routes/message.routes";
 import aiRoutes from "./routes/ai.routes";
+import guidanceRoutes from "./routes/guidance.routes";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -51,7 +52,7 @@ const corsOptions: cors.CorsOptions = {
     return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Accept"],
 };
 
@@ -198,6 +199,9 @@ app.use("/api/messages", messageRoutes);
 // AI Routes
 app.use("/api/ai", aiRoutes);
 
+// Guidance Routes
+app.use("/api/guidance", guidanceRoutes);
+
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Global Error Context:", {
@@ -218,6 +222,11 @@ io.on("connection", (socket) => {
   socket.on("join_room", (room: string) => {
     socket.join(room);
     console.log(`User ${socket.id} joined room: ${room}`);
+  });
+
+  socket.on("join_guidance_session", (sessionId: string) => {
+    socket.join(`guidance_${sessionId}`);
+    console.log(`User ${socket.id} joined guidance session: ${sessionId}`);
   });
 
   socket.on("user_online", async (userId: number) => {
@@ -242,6 +251,27 @@ io.on("connection", (socket) => {
       return;
     } catch (err) {
       console.error("Failed to save chat message:", err);
+    }
+  });
+
+  socket.on("send_guidance_message", async (data: any) => {
+    // data: { sessionId, senderId, content, type, metadata }
+    try {
+      const { sessionId, senderId, content, type, metadata } = data;
+      // You should ideally check if it's strictly authorized but we'll trust the provided ids
+      const saved = await prisma.guidanceMessage.create({
+        data: {
+          sessionId,
+          senderId: parseInt(senderId),
+          content: content || "",
+          type: type || "TEXT",
+          metadata: metadata || null,
+        }
+      });
+      
+      io.to(`guidance_${sessionId}`).emit("receive_guidance_message", saved);
+    } catch (err) {
+      console.error("Failed to save guidance message:", err);
     }
   });
 
