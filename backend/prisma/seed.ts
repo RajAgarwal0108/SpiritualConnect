@@ -151,12 +151,20 @@ async function main() {
   const arjuna = await prisma.user.findUnique({ where: { email: "arjuna@vibes.com" } });
   const mirabai = await prisma.user.findUnique({ where: { email: "mirabai@bhakti.com" } });
 
-  if (arjuna) {
-    const exists = await prisma.blog.findFirst({ where: { title: blogSamples[0].title, authorId: arjuna.id } });
+  const sample0 = blogSamples[0];
+  const sample1 = blogSamples[1];
+
+  if (arjuna && sample0) {
+    const exists = await prisma.blog.findFirst({ where: { title: sample0.title, authorId: arjuna.id } });
     if (!exists) {
       const blog = await prisma.blog.create({
         data: {
-          ...blogSamples[0],
+          title: sample0.title,
+          excerpt: sample0.excerpt,
+          content: sample0.content,
+          category: sample0.category,
+          readTime: sample0.readTime,
+          coverImage: sample0.coverImage,
           authorId: arjuna.id
         }
       });
@@ -168,12 +176,17 @@ async function main() {
     }
   }
 
-  if (mirabai) {
-    const exists = await prisma.blog.findFirst({ where: { title: blogSamples[1].title, authorId: mirabai.id } });
+  if (mirabai && sample1) {
+    const exists = await prisma.blog.findFirst({ where: { title: sample1.title, authorId: mirabai.id } });
     if (!exists) {
       const blog = await prisma.blog.create({
         data: {
-          ...blogSamples[1],
+          title: sample1.title,
+          excerpt: sample1.excerpt,
+          content: sample1.content,
+          category: sample1.category,
+          readTime: sample1.readTime,
+          coverImage: sample1.coverImage,
           authorId: mirabai.id
         }
       });

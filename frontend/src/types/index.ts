@@ -4,6 +4,10 @@ export interface User {
   name: string;
   role: 'USER' | 'MODERATOR' | 'ADMIN';
   createdAt: string;
+  isGuide?: boolean;
+  guideStatus?: 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED';
+  guideTitle?: string | null;
+  guideBio?: string | null;
 }
 
 export interface Comment {

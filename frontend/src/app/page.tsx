@@ -82,13 +82,18 @@ export default function Home() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-sacred-gold bg-sacred-gold/5 px-3 py-1.5 md:px-4 md:py-1.5 rounded-full border border-sacred-gold/10">Sanctuary Home</span>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-sacred-text mt-4 md:mt-6 leading-[1.1]">
-                Peace be with you, <br className="md:hidden" />
+              <div className="flex items-center gap-2 mb-4 md:mb-6">
+                <div className="w-10 h-[1px] bg-sacred-gold"></div>
+                <span className="text-sacred-gold font-medium uppercase tracking-widest text-xs md:text-sm">Welcome to Sanctuary</span>
+              </div>
+              <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-sacred-text leading-[1.1]">
+                Reconnect with <br />
+                <span className="italic font-serif text-sacred-muted">Your Divine Self,</span>
                 <span className="text-sacred-gold"> {user?.name?.split(' ')[0] || 'Seeker'}</span>
               </h1>
-              <p className="text-sacred-muted italic text-base md:text-xl mt-3 md:mt-4 max-w-lg leading-relaxed">
-                Your spiritual journey continues. Reconnect with your intention and find your center.
+              <p className="text-sacred-text/70 text-lg md:text-xl mt-4 md:mt-6 max-w-2xl leading-relaxed">
+                Your spiritual journey continues. Reconnect with like-minded individuals, 
+                share wisdom, and find guidance in this sacred space.
               </p>
             </motion.div>
           </section>
