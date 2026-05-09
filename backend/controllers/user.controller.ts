@@ -133,7 +133,13 @@ export const followUser = async (req: AuthRequest, res: Response) => {
 
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {
+    const currentUserId = req.user?.id;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+
     const users = await prisma.user.findMany({
+      take: limit,
+      skip: (page - 1) * limit,
       select: {
         id: true,
         name: true,
@@ -143,25 +149,16 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
         },
         _count: {
           select: { followers: true, following: true, posts: true }
-        }
+        },
+        followers: currentUserId ? { where: { followerId: currentUserId }, select: { id: true } } : false
       }
     });
 
-    // If logged in, check if user follows them
-    const currentUserId = req.user?.id;
-    let usersWithFollowStatus = users;
-
-    if (currentUserId) {
-      const following = await prisma.follow.findMany({
-        where: { followerId: currentUserId },
-        select: { followingId: true }
-      });
-      const followingIds = new Set(following.map((f: { followingId: number }) => f.followingId));
-      usersWithFollowStatus = users.map((u: any) => ({
-        ...u,
-        isFollowing: followingIds.has(u.id)
-      }));
-    }
+    const usersWithFollowStatus = users.map((u: any) => ({
+      ...u,
+      isFollowing: currentUserId ? Array.isArray(u.followers) && u.followers.length > 0 : false,
+      followers: undefined // remove the nested followers array from response
+    }));
 
     res.json(usersWithFollowStatus);
   } catch (error) {
@@ -199,8 +196,13 @@ export const getBookmarkedPosts = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+
     const bookmarkedPosts = await prisma.bookmark.findMany({
       where: { userId },
+      take: limit,
+      skip: (page - 1) * limit,
       include: {
         post: {
           include: {
