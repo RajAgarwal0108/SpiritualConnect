@@ -4,7 +4,7 @@ import type { AuthRequest } from "../middlewares/auth.middleware";
 
 export const getPosts = async (req: AuthRequest, res: Response) => {
   try {
-    const { communityId } = req.query;
+    const { communityId, page: pageQuery, limit: limitQuery } = req.query;
     const userId = req.user?.id;
     const where: any = {};
     
@@ -22,8 +22,13 @@ export const getPosts = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    const page = parseInt(pageQuery as string) || 1;
+    const limit = parseInt(limitQuery as string) || 50;
+
     const posts = await prisma.post.findMany({
       where,
+      take: limit,
+      skip: (page - 1) * limit,
       include: {
         author: {
           select: { id: true, name: true, profile: { select: { avatar: true } } }
@@ -245,6 +250,7 @@ export const getPostById = async (req: AuthRequest, res: Response) => {
           select: { id: true, name: true, profile: true }
         },
         comments: {
+          take: 10,
           include: {
             author: {
               select: { id: true, name: true, profile: true }

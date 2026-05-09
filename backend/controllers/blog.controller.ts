@@ -4,8 +4,22 @@ import type { AuthRequest } from "../middlewares/auth.middleware";
 
 export const getBlogs = async (req: Request, res: Response) => {
   try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
     const blogs = await prisma.blog.findMany({
-      include: {
+      take: limit,
+      skip: (page - 1) * limit,
+      select: {
+        id: true,
+        title: true,
+        excerpt: true,
+        category: true,
+        readTime: true,
+        coverImage: true,
+        authorId: true,
+        createdAt: true,
+        updatedAt: true,
         author: {
           select: { id: true, name: true, profile: { select: { avatar: true } } }
         },
@@ -33,6 +47,7 @@ export const getBlogById = async (req: Request, res: Response) => {
           select: { id: true, name: true, profile: { select: { avatar: true } } }
         },
         comments: {
+          take: 20,
           include: {
             author: {
               select: { id: true, name: true, profile: { select: { avatar: true } } }

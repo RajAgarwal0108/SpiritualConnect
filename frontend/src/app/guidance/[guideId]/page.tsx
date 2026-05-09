@@ -1,13 +1,15 @@
 'use client';
 
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { guidanceService } from '@/services/guidance.service';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { useAuthStore } from '@/store/globalStore';
 
 export default function GuideProfilePage() {
   const { guideId } = useParams();
-  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
 
   const { data: guide, isLoading } = useQuery({
     queryKey: ['guide', guideId],
@@ -19,11 +21,24 @@ export default function GuideProfilePage() {
     mutationFn: (id: number) => guidanceService.requestSession(id),
     onSuccess: () => {
       toast.success('Session requested successfully!');
-      router.push('/profile/guidance');
+      queryClient.invalidateQueries({ queryKey: ['guidanceSessions'] });
+      queryClient.invalidateQueries({ queryKey: ['myRequests'] });
     },
     onError: (err: any) => {
       toast.error(err?.response?.data?.error || 'Failed to request session');
     }
+  });
+
+  // Check if there's an existing session between current user and this guide
+  const { data: sessions } = useQuery({
+    queryKey: ['guidanceSessions'],
+    queryFn: guidanceService.getSessions,
+    enabled: !!user,
+  });
+
+  const existingSession = sessions?.find((s: any) => {
+    const gId = Number(guideId);
+    return (s.guide?.id === gId && s.userId === user?.id) || (s.userId === user?.id && s.guideId === gId);
   });
 
   if (isLoading) {
@@ -54,13 +69,29 @@ export default function GuideProfilePage() {
               </div>
             </div>
             
-            <button 
-              onClick={() => requestSession.mutate(Number(guideId))}
-              disabled={requestSession.isPending}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 min-w-[200px]"
-            >
-              {requestSession.isPending ? 'Requesting...' : 'Request 1-on-1 Guidance'}
-            </button>
+            {existingSession ? (
+              existingSession.status === 'PENDING' ? (
+                <button className="px-6 py-3 bg-amber-100 text-amber-800 rounded-lg font-semibold min-w-[200px]" disabled>
+                  Requested
+                </button>
+              ) : existingSession.status === 'ACCEPTED' ? (
+                <a href={`/guidance/session/${existingSession.id}`} className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition min-w-[200px]">
+                  Accepted — Open Session
+                </a>
+              ) : (
+                <button className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium min-w-[200px]" disabled>
+                  {existingSession.status}
+                </button>
+              )
+            ) : (
+              <button 
+                onClick={() => requestSession.mutate(Number(guideId))}
+                disabled={requestSession.isPending}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 min-w-[200px]"
+              >
+                {requestSession.isPending ? 'Requesting...' : 'Request 1-on-1 Guidance'}
+              </button>
+            )}
           </div>
 
           <div className="mt-8 space-y-6">

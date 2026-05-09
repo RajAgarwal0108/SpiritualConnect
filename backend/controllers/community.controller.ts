@@ -164,8 +164,13 @@ export const getCommunityMembers = async (req: Request, res: Response) => {
     const id = parseId(req.params.id);
     if (!id) return res.status(400).json({ message: "Valid Community ID is required" });
 
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+
     const memberships = await prisma.communityMembership.findMany({
       where: { communityId: id },
+      take: limit,
+      skip: (page - 1) * limit,
       include: {
         user: {
           select: {
