@@ -1,0 +1,22 @@
+flowchart LR
+    UI[Client Apps<br/>Web / Mobile] --> API[API Gateway Layer<br/>Express on Bun]
+
+    API --> AUTH[Authentication & Authorization<br/>JWT + RBAC]
+    API --> FEED[Content & Community Module<br/>Posts, Comments, Reactions]
+    API --> MSG[Messaging Module<br/>1-to-1 Conversations]
+    API --> GUIDE[AI Guidance Module<br/>Session-aware Oracle]
+    API --> RTC[Realtime Module<br/>Socket.IO Presence + Events]
+
+    AUTH --> DB[(PostgreSQL via Prisma)]
+    FEED --> DB
+    MSG --> DB
+    GUIDE --> DB
+    RTC --> DB
+
+    GUIDE <--> LLM[External Gemini API]
+
+    AUTH --> EH[Shared Security & Error Layer<br/>Validation, Guards, Exception Handling]
+    FEED --> EH
+    MSG --> EH
+    GUIDE --> EH
+    RTC --> EH

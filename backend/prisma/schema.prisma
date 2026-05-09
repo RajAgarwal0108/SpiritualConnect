@@ -129,6 +129,9 @@ model Blog {
   updatedAt  DateTime      @updatedAt
   author     User          @relation(fields: [authorId], references: [id])
   comments   BlogComment[]
+
+  @@index([authorId])
+  @@index([createdAt])
 }
 
 model BlogComment {
@@ -139,6 +142,9 @@ model BlogComment {
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
   blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+  @@index([blogId])
+  @@index([authorId])
 }
 
 model Course {
@@ -163,6 +169,8 @@ model Module {
   courseId Int
   lessons  Lesson[]
   course   Course   @relation(fields: [courseId], references: [id])
+
+  @@index([courseId])
 }
 
 model Lesson {
@@ -174,6 +182,8 @@ model Lesson {
   order    Int
   moduleId Int
   module   Module  @relation(fields: [moduleId], references: [id])
+
+  @@index([moduleId])
 }
 
 model CourseEnrollment {
@@ -241,6 +251,8 @@ model Report {
   createdAt  DateTime @default(now())
   status     String   @default("PENDING")
   reporter   User     @relation("reporter", fields: [reporterId], references: [id])
+
+  @@index([reporterId])
 }
 
 model Message {
@@ -250,6 +262,9 @@ model Message {
   senderName String
   content    String
   createdAt  DateTime @default(now())
+
+  @@index([room])
+  @@index([createdAt])
 }
 
 model RefreshToken {
@@ -333,4 +348,8 @@ model GuidanceMessage {
   createdAt DateTime        @default(now())
   session   GuidanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sender    User            @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([senderId])
+  @@index([createdAt])
 }

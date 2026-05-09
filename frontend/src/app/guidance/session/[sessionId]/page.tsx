@@ -43,6 +43,17 @@ export default function GuidanceSessionChat() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['guidanceSessions'] }),
   });
 
+  const respondMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'ACCEPTED' | 'REJECTED' }) => guidanceService.respondToSession(id, status),
+    onSuccess: () => {
+      toast.success('Session updated');
+      queryClient.invalidateQueries({ queryKey: ['guidanceSessions'] });
+    },
+    onError: () => {
+      toast.error('Failed to update session');
+    }
+  });
+
   // Load message history
   useEffect(() => {
     if (sessionId) {
@@ -118,9 +129,16 @@ export default function GuidanceSessionChat() {
   const isSeeker = session.userId === user?.id;
   const isGuide = session.guideId === user?.id;
   const otherPerson = isSeeker ? session.guide : session.user;
+  const sessionStatus = session.status;
 
   const sendMessage = (type: string = 'TEXT', metadata: any = null, customContent?: string) => {
+    // Allow sending only when session is accepted, or allow seeker initial check-in before acceptance
+    const canSendBeforeAccept = sessionStatus === 'PENDING' && isSeeker && messages.length === 0;
     if ((!messageInput.trim() && !customContent) || !socketRef.current || !user) return;
+    if (sessionStatus !== 'ACCEPTED' && !canSendBeforeAccept && !isGuide) {
+      toast.error('Waiting for the guide to accept the session.');
+      return;
+    }
     
     socketRef.current.emit("send_guidance_message", {
       sessionId,
@@ -164,6 +182,7 @@ export default function GuidanceSessionChat() {
               </Badge>
             </div>
             <div className="flex items-center gap-3 mt-1">
+               <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700 font-bold uppercase">{sessionStatus}</span>
                {session.mood && (
                  <span className="text-xs flex items-center gap-1 text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
                    <Smile size={12} className="text-[#D4AF37]" /> {session.mood}
@@ -179,6 +198,20 @@ export default function GuidanceSessionChat() {
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto justify-end">
+          {isGuide && sessionStatus === 'PENDING' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => respondMutation.mutate({ id: session.id, status: 'REJECTED' })}
+                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg"
+                disabled={respondMutation.isPending}
+              >Decline</button>
+              <button
+                onClick={() => respondMutation.mutate({ id: session.id, status: 'ACCEPTED' })}
+                className="px-3 py-2 bg-emerald-500 text-white rounded-lg font-bold"
+                disabled={respondMutation.isPending}
+              >Accept</button>
+            </div>
+          )}
           {/* Mood Selector for Seeker */}
           {isSeeker && (
             <Popover>
@@ -338,6 +371,7 @@ export default function GuidanceSessionChat() {
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              disabled={!(sessionStatus === 'ACCEPTED' || (sessionStatus === 'PENDING' && isSeeker && messages.length === 0) || isGuide)}
             />
             <div className="absolute left-5 -top-2 px-2 bg-white text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-0 group-focus-within:opacity-100 transition-opacity">
               Focused Messenger
@@ -347,12 +381,15 @@ export default function GuidanceSessionChat() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => sendMessage()}
-            disabled={!messageInput.trim()}
+            disabled={!messageInput.trim() || !(sessionStatus === 'ACCEPTED' || (sessionStatus === 'PENDING' && isSeeker && messages.length === 0) || isGuide)}
             className="h-15 w-15 bg-linear-to-br from-[#D4AF37] to-[#B8860B] text-white rounded-2xl flex items-center justify-center hover:shadow-lg shadow-[#D4AF37]/20 transition-all disabled:opacity-30 disabled:grayscale"
           >
             <Send size={24} />
           </motion.button>
         </div>
+        {!(sessionStatus === 'ACCEPTED' || (sessionStatus === 'PENDING' && isSeeker && messages.length === 0) || isGuide) && (
+          <p className="text-xs text-slate-500 mt-2">Waiting for the guide to accept this session before messaging.</p>
+        )}
       </div>
     </div>
   );

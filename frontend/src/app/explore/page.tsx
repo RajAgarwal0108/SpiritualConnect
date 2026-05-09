@@ -42,6 +42,7 @@ export default function ExploreCommunitiesPage() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"communities" | "seekers">("communities");
+  const [pendingCommunityId, setPendingCommunityId] = useState<number | null>(null);
 
   const { data: communities = [], isLoading: loadingCommunities } = useQuery<Community[]>({
     queryKey: ["allCommunities"],
@@ -77,7 +78,11 @@ export default function ExploreCommunitiesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["joinedCommunities"] });
       queryClient.invalidateQueries({ queryKey: ["allCommunities"] });
+      setPendingCommunityId(null);
     },
+    onError: () => {
+      setPendingCommunityId(null);
+    }
   });
 
   const isJoined = (id: number) => joinedCommunities.some((c: any) => c.id === id);
@@ -201,11 +206,14 @@ export default function ExploreCommunitiesPage() {
                               </>
                             ) : (
                               <Button 
-                                onClick={() => joinMutation.mutate(community.id)}
-                                disabled={joinMutation.isPending}
+                                onClick={() => {
+                                  setPendingCommunityId(community.id);
+                                  joinMutation.mutate(community.id);
+                                }}
+                                disabled={pendingCommunityId === community.id && joinMutation.isPending}
                                 className="flex-1 rounded-full bg-sacred-gold text-white hover:bg-sacred-gold-dark font-bold h-10 md:h-12 text-xs md:text-base shadow-md shadow-sacred-gold/20 flex items-center gap-1.5 md:gap-2"
                               >
-                                Join Sangha <PlusCircle className="w-4 h-4" />
+                                {pendingCommunityId === community.id && joinMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Join Sangha <PlusCircle className="w-4 h-4" /></>}
                               </Button>
                             )}
                           </div>
