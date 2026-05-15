@@ -41,12 +41,16 @@ model User {
   enrollments        CourseEnrollment[]
   following          Follow[]              @relation("following")
   followers          Follow[]              @relation("followers")
+  threads            Thread[]
+  threadReplies      ThreadReply[]
   likes              Like[]
   posts              Post[]
   profile            Profile?
   RefreshToken       RefreshToken[]
   reportsMade        Report[]              @relation("reporter")
   verificationTokens VerificationToken[]   @relation("UserVerificationTokens")
+
+  @@index([isGuide, guideStatus])
 }
 
 model Profile {
@@ -101,7 +105,47 @@ model Community {
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
   members     CommunityMembership[]
+  threads     Thread[]
   posts       Post[]
+}
+
+model Thread {
+  id             Int           @id @default(autoincrement())
+  title          String
+  body           String
+  tags           String[]
+  isPinned       Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  lastActivityAt DateTime      @default(now())
+  authorId       Int
+  communityId    Int
+  author         User          @relation(fields: [authorId], references: [id])
+  community      Community     @relation(fields: [communityId], references: [id])
+  replies        ThreadReply[]
+
+  @@index([communityId, lastActivityAt])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model ThreadReply {
+  id        Int             @id @default(autoincrement())
+  body      String
+  replyType ThreadReplyType @default(GENERAL)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  authorId  Int
+  threadId  Int
+  parentId  Int?
+  author    User            @relation(fields: [authorId], references: [id])
+  thread    Thread          @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  parent    ThreadReply?    @relation("ThreadReplyTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  ThreadReply[]   @relation("ThreadReplyTree")
+
+  @@index([threadId, createdAt])
+  @@index([authorId])
+  @@index([parentId])
 }
 
 model CommunityMembership {
@@ -309,6 +353,13 @@ enum Role {
   ADMIN
 }
 
+enum ThreadReplyType {
+  GENERAL
+  BLESSING
+  PRACTICE
+  TEXT
+}
+
 model GuideApplication {
   id          String      @id @default(cuid())
   userId      Int         @unique
@@ -336,6 +387,8 @@ model GuidanceSession {
   messages        GuidanceMessage[]
 
   @@unique([userId, guideId])
+  @@index([userId, status])
+  @@index([guideId, status])
 }
 
 model GuidanceMessage {

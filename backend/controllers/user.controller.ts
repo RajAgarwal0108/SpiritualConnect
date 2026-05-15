@@ -96,6 +96,29 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const updatePrivacy = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const idParam = req.params["id"];
+    const idStr = Array.isArray(idParam) ? idParam[0] : idParam;
+    const targetUserId = parseInt(idStr || "");
+
+    if (userId !== targetUserId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { isPrivate } = req.body;
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: { isPrivate: !!isPrivate },
+    });
+
+    res.json({ message: "Privacy setting updated", isPrivate: !!isPrivate });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update privacy", error });
+  }
+};
+
 export const followUser = async (req: AuthRequest, res: Response) => {
   try {
     const followerId = req.user?.id;

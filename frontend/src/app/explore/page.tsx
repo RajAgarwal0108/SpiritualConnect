@@ -9,6 +9,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { getMediaUrl } from "@/lib/media";
+import toast from "react-hot-toast";
 
 interface Community {
   id: number;
@@ -75,17 +76,43 @@ export default function ExploreCommunitiesPage() {
       const res = await api.post(`/communities/${id}/join`);
       return res.data;
     },
-    onSuccess: () => {
+    onMutate: (id: number) => {
+      const previousJoined = queryClient.getQueryData(["joinedCommunities"]);
+
+      const allCommunities = queryClient.getQueryData<Community[]>(["allCommunities"]) || [];
+      const community = allCommunities.find((c) => c.id === id);
+
+      if (community) {
+        queryClient.setQueryData(["joinedCommunities"], (old: any[] = []) => {
+          if (old.some((c: any) => c.id === id)) return old;
+          return [...old, community];
+        });
+      }
+
+      return { previousJoined };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousJoined) {
+        queryClient.setQueryData(["joinedCommunities"], context.previousJoined);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["joinedCommunities"] });
       queryClient.invalidateQueries({ queryKey: ["allCommunities"] });
-      setPendingCommunityId(null);
-    },
-    onError: () => {
       setPendingCommunityId(null);
     }
   });
 
   const isJoined = (id: number) => joinedCommunities.some((c: any) => c.id === id);
+
+  const handleJoin = (communityId: number) => {
+    if (!user) {
+      toast.error("Please sign in to join a circle.");
+      return;
+    }
+    setPendingCommunityId(communityId);
+    joinMutation.mutate(communityId);
+  };
 
   const filteredCommunities = communities.filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -98,7 +125,7 @@ export default function ExploreCommunitiesPage() {
   );
 
   return (
-    <main className="min-h-screen bg-sacred-beige/5 pt-6 md:pt-12 pb-24 px-4 md:px-6">
+    <main className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 pt-6 md:pt-12 pb-24 px-4 md:px-6">
       <div className="max-w-6xl mx-auto space-y-8 md:space-y-12">
         
         {/* Header Section */}
@@ -110,8 +137,8 @@ export default function ExploreCommunitiesPage() {
                </div>
                <span className="text-[9px] md:text-[10px] uppercase font-bold tracking-[0.2em] md:tracking-[0.3em]">Discovery Hub</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-serif font-bold text-sacred-text tracking-tight">Explore the Sanctuary</h1>
-            <p className="text-sacred-muted italic text-base md:text-lg max-w-sm">Connect with the sangha through shared circles and kindred spirits.</p>
+            <h1 className="text-3xl md:text-5xl font-serif font-bold text-sacred-text tracking-tight">Discover Sacred Circles</h1>
+            <p className="text-sacred-muted italic text-base md:text-lg max-w-sm">Find threaded forums guided by practices, not algorithms.</p>
           </div>
 
           <div className="relative w-full md:w-80 group">
@@ -132,14 +159,14 @@ export default function ExploreCommunitiesPage() {
             onClick={() => setActiveTab("communities")}
             className={`px-4 md:px-6 py-2 md:py-3 font-serif text-base md:text-lg relative transition-colors ${activeTab === "communities" ? "text-sacred-gold font-bold" : "text-sacred-muted hover:text-sacred-gold"}`}
           >
-            Communities
+            Circles
             {activeTab === "communities" && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-sacred-gold" />}
           </button>
           <button 
             onClick={() => setActiveTab("seekers")}
             className={`px-4 md:px-6 py-2 md:py-3 font-serif text-base md:text-lg relative transition-colors ${activeTab === "seekers" ? "text-sacred-gold font-bold" : "text-sacred-muted hover:text-sacred-gold"}`}
           >
-            Kindred Spirits
+            Kindred Seekers
             {activeTab === "seekers" && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-sacred-gold" />}
           </button>
         </div>
@@ -166,7 +193,7 @@ export default function ExploreCommunitiesPage() {
                         key={community.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="group bg-white/60 backdrop-blur-xl rounded-3xl md:rounded-4xl p-5 md:p-8 border border-white shadow-sm hover:shadow-xl hover:shadow-sacred-gold/5 transition-all relative overflow-hidden flex flex-col min-h-56 md:h-80"
+                        className="group bg-white/70 backdrop-blur-xl rounded-3xl md:rounded-4xl p-5 md:p-8 border border-white shadow-sm hover:shadow-xl hover:shadow-sacred-gold/5 transition-all relative overflow-hidden flex flex-col min-h-[280px] md:min-h-[320px]"
                       >
                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity scale-150 pointer-events-none hidden md:block">
                           <Users size={120} />
@@ -178,7 +205,7 @@ export default function ExploreCommunitiesPage() {
                               {community.name[0]}
                             </div>
                             <div className="flex flex-col items-end">
-                              <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-sacred-muted/60">Seekers</span>
+                              <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-sacred-muted/60">Practitioners</span>
                               <span className="text-base md:text-xl font-serif font-bold text-sacred-text">
                                 {(community.memberCount || community._count?.members || 0).toLocaleString()}
                               </span>
@@ -186,9 +213,9 @@ export default function ExploreCommunitiesPage() {
                           </div>
 
                           <div className="flex-1 space-y-1 md:space-y-2">
-                             <h3 className="text-xl md:text-2xl font-serif font-bold text-sacred-text leading-tight">{community.name}</h3>
+                             <h3 className="text-xl md:text-2xl font-serif font-bold text-sacred-text leading-tight line-clamp-2">{community.name}</h3>
                              <p className="text-xs md:text-sm text-sacred-muted italic line-clamp-2 md:line-clamp-3 leading-relaxed">
-                               {community.description}
+                               Focus: {community.description}
                              </p>
                           </div>
 
@@ -197,7 +224,7 @@ export default function ExploreCommunitiesPage() {
                               <>
                                 <Link href={`/communities/${community.id}`} className="flex-1">
                                   <Button className="w-full rounded-full bg-white border border-sacred-gold/20 text-sacred-gold hover:bg-sacred-gold/5 font-bold h-10 md:h-12 text-xs md:text-base flex items-center gap-1.5 md:gap-2">
-                                    Open <ArrowUpRight className="w-4 h-4" />
+                                    Enter Circle <ArrowUpRight className="w-4 h-4" />
                                   </Button>
                                 </Link>
                                 <div className="p-2 md:p-3 bg-green-500/10 text-green-600 rounded-full" title="Already a member">
@@ -206,14 +233,11 @@ export default function ExploreCommunitiesPage() {
                               </>
                             ) : (
                               <Button 
-                                onClick={() => {
-                                  setPendingCommunityId(community.id);
-                                  joinMutation.mutate(community.id);
-                                }}
-                                disabled={pendingCommunityId === community.id && joinMutation.isPending}
+                                onClick={() => handleJoin(community.id)}
+                                disabled={pendingCommunityId === community.id}
                                 className="flex-1 rounded-full bg-sacred-gold text-white hover:bg-sacred-gold-dark font-bold h-10 md:h-12 text-xs md:text-base shadow-md shadow-sacred-gold/20 flex items-center gap-1.5 md:gap-2"
                               >
-                                {pendingCommunityId === community.id && joinMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Join Sangha <PlusCircle className="w-4 h-4" /></>}
+                                {pendingCommunityId === community.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Enter Circle <PlusCircle className="w-4 h-4" /></>}
                               </Button>
                             )}
                           </div>

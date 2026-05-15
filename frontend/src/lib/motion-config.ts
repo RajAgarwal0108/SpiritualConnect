@@ -5,7 +5,7 @@ import { Variants, Transition } from "framer-motion";
  * A slow, elegant, breathing cubic-bezier for a peaceful entrance.
  * Similar to 'overshoot-out' but tuned for serenity.
  */
-export const SACRED_EASE = [0.16, 1, 0.3, 1] as const; 
+export const SACRED_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]; 
 
 export const BREATHING_TRANSITION: Transition = {
   duration: 1.2,

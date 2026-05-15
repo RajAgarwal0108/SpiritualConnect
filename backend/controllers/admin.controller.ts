@@ -281,7 +281,7 @@ export const reviewGuideApplication = async (req: AuthRequest, res: Response) =>
       }
     });
 
-    res.json({ message: `Application \${status}`, application });
+    res.json({ message: `Application ${status}`, application });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to review application' });

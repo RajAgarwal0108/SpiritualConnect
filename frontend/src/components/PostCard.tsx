@@ -1,14 +1,15 @@
 "use client";
 
 import { Post } from "@/types";
-import { Heart, MessageSquare, Share2, Bookmark, Send, Trash2, MoreHorizontal, ChevronDown, ChevronUp, Sparkles, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import { Heart, Share2, Bookmark, Send, MoreHorizontal, Sparkles, MessageCircle } from "lucide-react";
 import { getMediaUrl } from "@/lib/media";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/services/api";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/globalStore";
 
 interface PostCardProps {
@@ -214,9 +215,11 @@ export default function PostCard({ post }: PostCardProps) {
               <div className="relative">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-linear-to-br from-sacred-gold/20 to-sacred-gold/40 flex items-center justify-center overflow-hidden border-2 border-white/60 shadow-sm group-hover:shadow-md transition-all duration-300">
                   {post.author.profile?.avatar ? (
-                    <img 
+                    <Image 
                       src={getMediaUrl(post.author.profile.avatar) as string} 
                       alt={post.author.name} 
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover" 
                     />
                   ) : (
@@ -289,9 +292,11 @@ export default function PostCard({ post }: PostCardProps) {
                 playsInline
               />
             ) : (
-              <img 
+              <Image 
                 src={mediaUrl || ""} 
                 alt="Sacred Media" 
+                width={800}
+                height={450}
                 className="w-full h-auto max-h-[70vh] object-contain transition-transform duration-500 group-hover/media:scale-[1.01]"
                 loading="lazy"
               />
@@ -400,7 +405,7 @@ export default function PostCard({ post }: PostCardProps) {
                       <Link href={`/profile/${comment.author.id}`} className="shrink-0">
                         <div className="w-9 h-9 rounded-xl overflow-hidden border border-sacred-border/20 shadow-sm">
                            {getMediaUrl(comment.author.profile?.avatar) ? (
-                             <img src={getMediaUrl(comment.author.profile?.avatar) as string} className="w-full h-full object-cover" />
+                             <Image src={getMediaUrl(comment.author.profile?.avatar) as string} alt={comment.author.name} width={36} height={36} className="w-full h-full object-cover" />
                            ) : (
                              <div className="w-full h-full bg-sacred-gold/10 flex items-center justify-center font-bold text-sacred-gold">
                                {comment.author.name[0]}

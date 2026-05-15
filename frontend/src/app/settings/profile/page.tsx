@@ -7,6 +7,7 @@ import api, { uploadApi } from "@/services/api";
 import { Loader2, Camera, Check, Twitter, Instagram, Globe, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { getMediaUrl } from "@/lib/media";
 
 const avatars = [
   "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
@@ -96,6 +97,14 @@ export default function ProfileSettingsPage() {
       </div>
 
       <section className="space-y-6">
+        {formData.avatar && (
+          <div className="flex flex-col items-center gap-3 mb-6">
+            <div className="w-24 h-24 rounded-3xl overflow-hidden border-2 border-sacred-gold/20 shadow-md">
+              <img src={getMediaUrl(formData.avatar) || formData.avatar} alt="Current avatar" className="w-full h-full object-cover" />
+            </div>
+            <p className="text-[10px] uppercase tracking-widest text-sacred-muted/60 font-bold">Current Avatar</p>
+          </div>
+        )}
         <label className="text-[10px] font-bold text-sacred-muted/60 uppercase tracking-widest block">Select your Avatar</label>
         <div className="grid grid-cols-4 md:grid-cols-6 gap-3 md:gap-4">
           {avatars.map((url) => (

@@ -32,7 +32,7 @@ export default function GuidanceSessionChat() {
   const { data: sessions, isLoading: sessionsLoading } = useQuery({
     queryKey: ['guidanceSessions'],
     queryFn: guidanceService.getSessions,
-    refetchInterval: 5000, // Keep session metadata fresh
+    // Polling removed in favor of Socket updates + manual invalidation to fix severe performance drops
   });
 
   const session = sessions?.find(s => s.id === sessionId);
@@ -216,7 +216,7 @@ export default function GuidanceSessionChat() {
           {isSeeker && (
             <Popover>
               <PopoverTrigger asChild>
-                <button className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
+                <button type="button" className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
                   <Settings size={20} />
                 </button>
               </PopoverTrigger>
@@ -248,7 +248,7 @@ export default function GuidanceSessionChat() {
           )}
 
           {isGuide && session.isDetailsShared && session.user?.phoneNumber && (
-             <a href={`tel:\${session.user.phoneNumber}`} className="flex gap-2 items-center text-sm bg-emerald-500 text-white px-5 py-2.5 rounded-2xl font-bold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all">
+             <a href={`tel:${session.user.phoneNumber}`} className="flex gap-2 items-center text-sm bg-emerald-500 text-white px-5 py-2.5 rounded-2xl font-bold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all">
                <Phone size={18} /> Connect Privately
              </a>
           )}

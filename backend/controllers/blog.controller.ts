@@ -68,6 +68,35 @@ export const getBlogById = async (req: Request, res: Response) => {
   }
 };
 
+export const getUserBlogs = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const id = parseInt(userId as string);
+    if (!id) return res.status(400).json({ message: "Valid User ID is required" });
+
+    const blogs = await prisma.blog.findMany({
+      where: { authorId: id },
+      select: {
+        id: true,
+        title: true,
+        excerpt: true,
+        category: true,
+        readTime: true,
+        coverImage: true,
+        createdAt: true,
+        author: {
+          select: { id: true, name: true, profile: { select: { avatar: true } } }
+        },
+        _count: { select: { comments: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    res.json(blogs);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch user blogs", error });
+  }
+};
+
 export const createBlog = async (req: AuthRequest, res: Response) => {
   try {
     const { title, excerpt, content, category, readTime, coverImage } = req.body;

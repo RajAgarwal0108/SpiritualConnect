@@ -7,7 +7,9 @@ import {
 	resendVerification,
 	forgotPassword,
 	resetPassword,
-} from "../controllers/auth.controller.ts";
+	deactivateAccount,
+} from "../controllers/auth.controller";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -18,5 +20,6 @@ router.post("/verify-email", verifyEmail);
 router.post("/resend-verification", resendVerification);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.delete("/deactivate", authenticate, deactivateAccount);
 
 export default router;

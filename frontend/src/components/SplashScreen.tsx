@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { SACRED_EASE } from "@/lib/motion-config";
 
@@ -10,8 +11,8 @@ export const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onComplete, 600); // Wait for fade out
-    }, 2500);
+      setTimeout(onComplete, 300); // Quick fade out
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -36,8 +37,7 @@ export const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
               transition={{ duration: 1.2, ease: SACRED_EASE as any }}
               className="mb-8"
             >
-              {/* Use the new spiritual SVG logo from public folder */}
-              <img src="/file.svg" alt="SpiritualConnect" className="w-24 h-24 mx-auto shadow-2xl rounded-full bg-white/0" />
+              <Image src="/file.svg" alt="SpiritualConnect" width={96} height={96} className="w-24 h-24 mx-auto shadow-2xl rounded-full" priority />
             </motion.div>
 
             {/* Sanskrit Inspired Tagline */}

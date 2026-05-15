@@ -40,6 +40,7 @@ export interface Post {
   author: {
     id: number;
     name: string;
+    role?: string;
     profile?: {
       avatar?: string;
     };
@@ -58,6 +59,13 @@ export interface Profile {
   id: number;
   bio?: string;
   avatar?: string;
+  avatarType?: string;
+  socialLinks?: {
+    twitter?: string;
+    instagram?: string;
+    website?: string;
+  };
+  interests?: string[];
   userId: number;
 }
 
@@ -69,6 +77,45 @@ export interface Community {
   _count?: {
     members: number;
     posts: number;
+  };
+}
+
+export interface Thread {
+  id: number;
+  title: string;
+  body: string;
+  tags: string[];
+  isPinned?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  lastActivityAt?: string;
+  communityId: number;
+  author: {
+    id: number;
+    name: string;
+    profile?: {
+      avatar?: string;
+    };
+  };
+  _count?: {
+    replies: number;
+  };
+}
+
+export interface ThreadReply {
+  id: number;
+  body: string;
+  replyType: "GENERAL" | "BLESSING" | "PRACTICE" | "TEXT";
+  createdAt: string;
+  updatedAt?: string;
+  parentId?: number | null;
+  threadId: number;
+  author: {
+    id: number;
+    name: string;
+    profile?: {
+      avatar?: string;
+    };
   };
 }
 

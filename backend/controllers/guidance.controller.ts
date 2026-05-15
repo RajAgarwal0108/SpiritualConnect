@@ -34,6 +34,7 @@ export const getGuides = async (req: Request, res: Response) => {
   try {
     const guides = await prisma.user.findMany({
       where: { isGuide: true, guideStatus: 'APPROVED' },
+      take: 100, // Capped to prevent memory overload without breaking frontend api contract
       select: {
         id: true, name: true, guideTitle: true, guideBio: true,
         profile: { select: { avatar: true, bio: true } }

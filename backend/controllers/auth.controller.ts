@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { AuthRequest } from "../middlewares/auth.middleware";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import axios from "axios";
@@ -68,7 +69,6 @@ export const googleLogin = async (req: Request, res: Response) => {
 
     const email = googleUser.email;
     const name = googleUser.name;
-    const avatar = googleUser.picture;
 
     let user = await prisma.user.findUnique({
       where: { email },
@@ -88,9 +88,9 @@ export const googleLogin = async (req: Request, res: Response) => {
           emailVerified: new Date(),
           profile: {
             create: {
-              avatar,
-              avatarType: "custom",
-              bio: "Vedic Seeker joined via Google",
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s+/g, "")}`,
+              avatarType: "library",
+              bio: "Seeker joined via Google",
             },
           },
         },
@@ -271,6 +271,22 @@ export const forgotPassword = async (req: Request, res: Response) => {
     res.json(genericResetResponse);
   } catch (error) {
     res.status(500).json({ message: "Forgot password flow failed", error });
+  }
+};
+
+export const deactivateAccount = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as AuthRequest).user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { deactivatedAt: new Date() },
+    });
+
+    res.json({ message: "Account deactivated" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to deactivate account", error });
   }
 };
 

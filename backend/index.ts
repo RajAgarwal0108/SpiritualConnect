@@ -2,6 +2,7 @@ import "./config/init-env";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import jwt from "jsonwebtoken";
 import { prisma } from "./lib/prisma";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -12,8 +13,10 @@ import adminRoutes from "./routes/admin.routes";
 import communityRoutes from "./routes/community.routes";
 import blogRoutes from "./routes/blog.routes";
 import messageRoutes from "./routes/message.routes";
+import threadRoutes from "./routes/thread.routes";
 import aiRoutes from "./routes/ai.routes";
 import guidanceRoutes from "./routes/guidance.routes";
+import courseRoutes from "./routes/course.routes";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -79,9 +82,22 @@ const upload = multer({
   }
 });
 
+const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
+
 const io = new Server(httpServer, {
-  // Reuse the same CORS config so Socket.IO and REST behave identically.
   cors: corsOptions,
+});
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) return next(new Error("Authentication required"));
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; role: string };
+    (socket as any).user = decoded;
+    next();
+  } catch {
+    next(new Error("Invalid token"));
+  }
 });
 
 const selectOnlineUserFields = {
@@ -190,6 +206,9 @@ app.use("/api/admin", adminRoutes);
 // Community Routes
 app.use("/api/communities", communityRoutes);
 
+// Thread Routes
+app.use("/api/threads", threadRoutes);
+
 // Blog Routes
 app.use("/api/blogs", blogRoutes);
 
@@ -201,6 +220,7 @@ app.use("/api/ai", aiRoutes);
 
 // Guidance Routes
 app.use("/api/guidance", guidanceRoutes);
+app.use("/api/courses", courseRoutes);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -273,6 +293,14 @@ io.on("connection", (socket) => {
     } catch (err) {
       console.error("Failed to save guidance message:", err);
     }
+  });
+
+  socket.on("typing", (data: { room: string; userId: number }) => {
+    socket.to(data.room).emit("user_typing", { userId: data.userId });
+  });
+
+  socket.on("stop_typing", (data: { room: string; userId: number }) => {
+    socket.to(data.room).emit("user_stop_typing", { userId: data.userId });
   });
 
   socket.on("disconnect", async () => {

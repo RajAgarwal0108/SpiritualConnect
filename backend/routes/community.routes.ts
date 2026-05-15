@@ -9,6 +9,7 @@ import {
   getCommunityPosts,
   getCommunityMembers
 } from "../controllers/community.controller";
+import { getCommunityThreads, createThread } from "../controllers/thread.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
@@ -16,9 +17,11 @@ const router = Router();
 router.get("/", getAllCommunities);
 router.get("/joined", authenticate, getJoinedCommunities);
 router.get("/:id", getCommunityById);
+router.get("/:id/threads", getCommunityThreads);
 router.get("/:id/members", authenticate, getCommunityMembers);
 router.get("/:id/posts", getCommunityPosts);
 router.post("/", authenticate, createCommunity);
+router.post("/:id/threads", authenticate, createThread);
 router.post("/:id/join", authenticate, joinCommunity);
 router.delete("/:id/leave", authenticate, leaveCommunity);
 

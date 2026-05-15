@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import api from "@/services/api";
 import { getMediaUrl } from "@/lib/media";
 import { useAuthStore } from "@/store/globalStore";
-import { Loader2, Calendar, Edit, UserPlus, UserCheck, Sparkles, LogOut, Bookmark, HeartHandshake, ShieldCheck } from "lucide-react";
+import { Loader2, Calendar, Edit, UserPlus, UserCheck, Sparkles, LogOut, Bookmark, HeartHandshake, ShieldCheck, Twitter, Instagram, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Post, UserProfile } from "@/types";
@@ -177,6 +177,36 @@ export default function ProfilePage() {
                 <p className="text-sacred-muted text-base md:text-lg font-serif italic leading-relaxed max-w-2xl py-2 line-clamp-3">
                   "{profile.guideBio || profile.profile?.bio}"
                 </p>
+              )}
+
+              {profile.profile?.interests && profile.profile.interests.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {profile.profile.interests.map((interest) => (
+                    <span key={interest} className="px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold bg-amber-100/70 text-amber-700">
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {profile.profile?.socialLinks && (
+                <div className="flex flex-wrap items-center gap-4 pt-3">
+                  {profile.profile.socialLinks.twitter && (
+                    <a href={profile.profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sacred-muted hover:text-sky-500 transition-colors text-sm">
+                      <Twitter size={16} /> X
+                    </a>
+                  )}
+                  {profile.profile.socialLinks.instagram && (
+                    <a href={profile.profile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sacred-muted hover:text-pink-500 transition-colors text-sm">
+                      <Instagram size={16} /> Instagram
+                    </a>
+                  )}
+                  {profile.profile.socialLinks.website && (
+                    <a href={profile.profile.socialLinks.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sacred-muted hover:text-sacred-gold transition-colors text-sm">
+                      <Globe size={16} /> Website
+                    </a>
+                  )}
+                </div>
               )}
               
               <div className="flex items-center space-x-2 text-sacred-muted/60 pt-2">

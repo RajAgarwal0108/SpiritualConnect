@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api, { uploadApi } from "@/services/api";
 import { Button } from "@/components/ui/Button";
@@ -109,9 +110,11 @@ export default function CreateBlogPage() {
             >
               {formData.coverImage ? (
                 <>
-                  <img
+                  <Image
                     src={getMediaUrl(formData.coverImage) || ""}
                     alt="Preview"
+                    width={800}
+                    height={400}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

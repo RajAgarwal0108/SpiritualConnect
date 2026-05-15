@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import api from "@/services/api";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface AIResponse {
   spiritualTexts: Array<{
@@ -46,24 +48,37 @@ export default function AIAssistantPage() {
 
     setLoading(true);
     setError("");
+    setResponse({
+      spiritualTexts: [],
+      websiteContent: { posts: [], profiles: [] },
+      answer: ""
+    });
+
     try {
       console.log("Sending query:", question);
+      
       const res = await api.post("/ai/query", { question });
-      console.log("AI Response:", res.data);
-      
-      if (!res.data) {
-        setError("No response from Oracle. Please try again.");
-        return;
-      }
-      
-      setResponse(res.data);
-      setHistory([...history, { q: question, r: res.data }]);
+      const data = res.data;
+
+      setResponse({
+        spiritualTexts: data.spiritualTexts || [],
+        websiteContent: data.websiteContent || { posts: [], profiles: [] },
+        answer: data.answer || "",
+      });
+
+      setHistory(prev => [...prev, {
+        q: question,
+        r: {
+          spiritualTexts: data.spiritualTexts || [],
+          websiteContent: data.websiteContent || { posts: [], profiles: [] },
+          answer: data.answer || "",
+        }
+      }]);
+
       setQuestion("");
     } catch (error: any) {
       console.error("AI Query failed:", error);
-      const errorMsg = error.response?.data?.error || error.message || "Failed to query the Oracle";
-      setError(errorMsg);
-    } finally {
+      setError(error.message || "Failed to query the Oracle");
       setLoading(false);
     }
   };
@@ -134,8 +149,10 @@ export default function AIAssistantPage() {
                 <Sparkles size={16} className="text-sacred-gold opacity-50" />
                 <div className="h-px w-8 bg-sacred-gold/20" />
               </div>
-              <div className="text-center px-2 md:px-12 text-sacred-text leading-relaxed whitespace-pre-wrap font-serif italic text-lg md:text-2xl selection:bg-sacred-gold/10">
-                {response.answer}
+              <div className="px-2 md:px-12 text-sacred-text leading-relaxed font-serif text-lg md:text-xl selection:bg-sacred-gold/10 text-left [&>p]:mb-4 [&>p]:italic [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-4 [&>ul>li]:mb-1 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-4 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-4 [&>h1]:mt-6 [&>h1]:text-sacred-gold [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-3 [&>h2]:mt-6 [&>h2]:text-sacred-gold [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mb-3 [&>h3]:mt-4 [&>strong]:text-sacred-gold [&>strong]:font-bold [&>strong]:not-italic">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {response.answer}
+                </ReactMarkdown>
               </div>
               <div className="flex justify-center pt-2">
                 <div className="w-12 h-0.5 bg-sacred-gold/10 rounded-full" />

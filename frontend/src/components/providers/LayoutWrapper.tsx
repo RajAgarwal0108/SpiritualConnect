@@ -2,21 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { SplashScreen } from "@/components/SplashScreen";
-import { PageTransition } from "@/components/ui/PageTransition";
+import dynamic from "next/dynamic";
 import Header from "@/components/Header";
-import LeftSidebar from "@/components/LeftSidebar";
-import ChatSidebar from "@/components/ChatSidebar";
 import { useUIStore } from "@/store/uiStore";
 import { useAuthStore } from "@/store/globalStore";
 import { AnimatePresence, motion } from "framer-motion";
-import { SACRED_EASE } from "@/lib/motion-config";
+
+const SplashScreen = dynamic(() => import("@/components/SplashScreen").then(m => ({ default: m.SplashScreen })), { ssr: false });
+const PageTransition = dynamic(() => import("@/components/ui/PageTransition").then(m => ({ default: m.PageTransition })), { ssr: false });
+const LeftSidebar = dynamic(() => import("@/components/LeftSidebar"), { ssr: false });
+const ChatSidebar = dynamic(() => import("@/components/ChatSidebar"), { ssr: false });
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
-  const { user } = useAuthStore();
-  const { isLeftSidebarOpen, setLeftSidebar, isRightSidebarOpen, setRightSidebar, isChatExpanded } = useUIStore();
+  const user = useAuthStore(s => s.user);
+  const isLeftSidebarOpen = useUIStore(s => s.isLeftSidebarOpen);
+  const setLeftSidebar = useUIStore(s => s.setLeftSidebar);
+  const isRightSidebarOpen = useUIStore(s => s.isRightSidebarOpen);
+  const setRightSidebar = useUIStore(s => s.setRightSidebar);
+  const isChatExpanded = useUIStore(s => s.isChatExpanded);
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
   const isAdminPage = pathname.startsWith("/admin");
@@ -92,12 +97,13 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2 }}
                 onClick={() => {
                   setLeftSidebar(false);
                   setRightSidebar(false);
                 }}
-                className="fixed inset-0 z-55 bg-sacred-text/10 backdrop-blur-sm"
+                className="fixed inset-0 z-55 bg-sacred-text/10"
+                style={{ willChange: 'opacity' }}
               />
             )}
           </AnimatePresence>
@@ -112,12 +118,13 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
               initial={{ x: 400, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 400, opacity: 0 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className={`fixed right-0 top-0 bottom-0 z-70 overflow-hidden transition-all duration-500 shadow-2xl ${
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className={`fixed right-0 top-0 bottom-0 z-70 overflow-hidden shadow-2xl ${
                 isChatExpanded 
                   ? "w-full left-0" 
                   : "w-full sm:w-105"
               }`}
+              style={{ willChange: isRightSidebarOpen ? 'transform' : 'auto' }}
             >
               <ChatSidebar />
             </motion.div>

@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useAuthStore } from "@/store/globalStore";
 import { usePathname } from "next/navigation";
-import { User, LogOut, Home, Compass, MessageCircle, Bell, Sparkles, BookOpen, ShieldCheck, Users, Search, X, MessageSquare, Menu, HeartHandshake } from "lucide-react";
+import { MessageCircle, ShieldCheck, Menu, HeartHandshake } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
-import { motion, AnimatePresence } from "framer-motion";
-import { SACRED_EASE } from "@/lib/motion-config";
 import { getMediaUrl } from "@/lib/media";
 
 export default function Header() {
@@ -63,7 +62,7 @@ export default function Header() {
           )}
           
           <Link href="/" className="flex items-center font-serif text-lg md:text-xl font-semibold text-sacred-gold tracking-tight shrink-0">
-            <img src="/file.svg" alt="SpiritualConnect" className="w-6 h-6 md:w-8 md:h-8 mr-2 md:mr-3" />
+            <Image src="/file.svg" alt="SpiritualConnect" width={32} height={32} className="w-6 h-6 md:w-8 md:h-8 mr-2 md:mr-3" />
             <span className="hidden sm:inline">SpiritualConnect</span>
           </Link>
           <span className="hidden lg:block h-4 w-px bg-sacred-border" />
@@ -116,9 +115,11 @@ export default function Header() {
                   aria-expanded={menuOpen}
                 >
                   {user.profile?.avatar ? (
-                    <img
+                    <Image
                       src={getMediaUrl(user.profile.avatar) as string}
                       alt={user.name}
+                      width={32}
+                      height={32}
                       className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover border border-sacred-border"
                     />
                   ) : (

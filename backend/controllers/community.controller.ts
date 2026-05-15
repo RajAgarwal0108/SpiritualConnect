@@ -32,8 +32,13 @@ export const getAllCommunities = async (req: Request, res: Response) => {
       prisma.community.count()
     ]);
 
+    const normalizedCommunities = communities.map((community) => ({
+      ...community,
+      memberCount: community._count?.members ?? community.memberCount
+    }));
+
     res.json({
-      data: communities,
+      data: normalizedCommunities,
       pagination: {
         page,
         limit,
@@ -63,7 +68,11 @@ export const getCommunityById = async (req: Request, res: Response) => {
     });
 
     if (!community) return res.status(404).json({ message: "Community not found" });
-    res.json(community);
+
+    res.json({
+      ...community,
+      memberCount: community._count?.members ?? community.memberCount
+    });
   } catch (error) {
     console.error("Error fetching community:", error);
     res.status(500).json({ message: "Error fetching community" });
@@ -266,21 +275,6 @@ export const getCommunityPosts = async (req: Request, res: Response) => {
           select: {
             id: true,
             name: true
-          }
-        },
-        comments: {
-           // IMPORTANT: Limit comments per post in feed to prevent huge payload
-           // Ideally, fetch comments separately appropriately
-           take: 3, 
-           orderBy: { createdAt: 'desc' },
-           include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                profile: { select: { avatar: true } }
-              }
-            }
           }
         },
         _count: {

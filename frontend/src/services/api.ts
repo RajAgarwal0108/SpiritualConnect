@@ -16,6 +16,21 @@ const api = axios.create({
   timeout: 30000, // 30 seconds default timeout
 });
 
+const getAuthToken = (): string | null => {
+  const storeToken = useAuthStore.getState().token;
+  if (storeToken) return storeToken;
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem("auth-storage");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { state?: { token?: string | null } };
+    return parsed?.state?.token || null;
+  } catch {
+    return null;
+  }
+};
+
 // Separate instance for file uploads with longer timeout
 export const uploadApi = axios.create({
   baseURL: API_URL,
@@ -26,7 +41,7 @@ uploadApi.interceptors.request.use((config) => {
   // For FormData uploads, don't set Content-Type
   delete config.headers["Content-Type"];
   
-  const token = useAuthStore.getState().token;
+  const token = getAuthToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -43,11 +58,21 @@ api.interceptors.request.use((config) => {
     delete config.headers["Content-Type"];
   }
   
-  const token = useAuthStore.getState().token;
+  const token = getAuthToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      useAuthStore.getState().logout();
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;
