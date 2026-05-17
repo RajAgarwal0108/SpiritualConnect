@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { } from "react";
 import { useAuthStore } from "@/store/globalStore";
 import { useMutation } from "@tanstack/react-query";
 import api from "@/services/api";
-import { Shield, Lock, Eye, EyeOff, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { Lock, Trash2, Loader2 } from "lucide-react";
 
 export default function AccountSettingsPage() {
   const { user, logout } = useAuthStore();
-  const [isPrivate, setIsPrivate] = useState(false); // In real app, fetch from user data
-
   const deactivateMutation = useMutation({
     mutationFn: async () => {
       await api.delete("/auth/deactivate");
@@ -21,12 +19,6 @@ export default function AccountSettingsPage() {
     },
   });
 
-  const togglePrivacyMutation = useMutation({
-    mutationFn: async (private_state: boolean) => {
-      await api.patch(`/users/${user?.id}/privacy`, { isPrivate: private_state });
-    }
-  });
-
   return (
     <div className="space-y-6 md:space-y-12">
       <div>
@@ -34,46 +26,7 @@ export default function AccountSettingsPage() {
         <p className="text-gray-500 font-medium">Protect your spiritual journey and personal data.</p>
       </div>
 
-      {/* Privacy Section */}
-      <section className="bg-white border-2 border-gray-100 rounded-3xl md:rounded-[2.5rem] p-4 md:p-8 space-y-6 md:space-y-8">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h4 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
-              <Eye className="text-indigo-600" size={24} />
-              <span>Incognito Mode</span>
-            </h4>
-            <p className="text-gray-500 font-medium max-w-md">
-              When active, your profile, posts, and spiritual progress are only visible to your accepted followers.
-            </p>
-          </div>
-          <button 
-            onClick={() => {
-              setIsPrivate(!isPrivate);
-              togglePrivacyMutation.mutate(!isPrivate);
-            }}
-            className={`w-16 h-8 rounded-full transition-all duration-300 relative ${isPrivate ? 'bg-indigo-600' : 'bg-gray-200'}`}
-          >
-            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 ${isPrivate ? 'left-9' : 'left-1'}`} />
-          </button>
-        </div>
-
-        <div className="h-px bg-gray-100" />
-
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h4 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
-              <Shield className="text-indigo-600" size={24} />
-              <span>Secured Communications</span>
-            </h4>
-            <p className="text-gray-500 font-medium max-w-md">
-              Allow AI Assistant to use your profile context for more personalized guidance.
-            </p>
-          </div>
-          <button className="w-16 h-8 rounded-full bg-indigo-600 relative">
-            <div className="absolute top-1 left-9 w-6 h-6 bg-white rounded-full" />
-          </button>
-        </div>
-      </section>
+      {/* (Removed Incognito Mode and Secured Communications per request) */}
 
       {/* Password Section */}
       <section className="space-y-4 md:space-y-6">

@@ -155,21 +155,29 @@ export { app, prisma };
 
 app.use(express.json());
 
-// Health check
-app.get("/api/health", async (req, res) => {
+// Health check — lightweight, no database call
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    message: "SpiritualConnect API is running",
+  });
+});
+
+// Health check with database connectivity test
+app.get("/api/health/db", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ 
-      status: "ok", 
+    res.json({
+      status: "ok",
       database: "connected",
-      message: "SpiritualConnect API is running" 
+      message: "SpiritualConnect API is running",
     });
   } catch (error) {
-    res.status(503).json({ 
-      status: "error", 
+    res.status(503).json({
+      status: "error",
       database: "disconnected",
       message: "API is running but database is unreachable",
-      error: (error as any).message
+      error: (error as any).message,
     });
   }
 });

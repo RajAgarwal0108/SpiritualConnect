@@ -8,7 +8,7 @@ import { useUIStore } from "@/store/uiStore";
 import { useAuthStore } from "@/store/globalStore";
 import { AnimatePresence, motion } from "framer-motion";
 
-const SplashScreen = dynamic(() => import("@/components/SplashScreen").then(m => ({ default: m.SplashScreen })), { ssr: false });
+const SplashScreen = dynamic(() => import("@/components/SplashScreen").then(m => ({ default: m.SplashScreen })));
 const PageTransition = dynamic(() => import("@/components/ui/PageTransition").then(m => ({ default: m.PageTransition })), { ssr: false });
 const LeftSidebar = dynamic(() => import("@/components/LeftSidebar"), { ssr: false });
 const ChatSidebar = dynamic(() => import("@/components/ChatSidebar"), { ssr: false });

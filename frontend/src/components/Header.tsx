@@ -170,12 +170,12 @@ export default function Header() {
                 </button>
 
                 {notificationOpen && (
-                  <div className="absolute right-0 top-10 w-[92vw] max-w-sm md:w-96 bg-white/90 backdrop-blur-md border border-white/40 rounded-2xl shadow-xl z-50 overflow-hidden">
+                  <div className="fixed left-2 right-2 top-16 w-auto max-w-none md:absolute md:left-auto md:right-0 md:top-10 md:w-96 bg-white/90 backdrop-blur-md border border-white/40 rounded-2xl shadow-xl z-50 overflow-hidden max-h-[calc(100vh-6rem)]">
                     <div className="px-4 py-3 border-b border-sacred-border/20 flex items-center justify-between">
                       <p className="text-sm font-semibold text-sacred-text">Notifications</p>
                       <span className="text-[10px] uppercase tracking-[0.2em] text-sacred-muted">Recent</span>
                     </div>
-                    <div className="max-h-96 overflow-y-auto">
+                    <div className="max-h-[calc(100vh-12rem)] md:max-h-96 overflow-y-auto">
                       {notifications.length === 0 ? (
                         <div className="px-4 py-8 text-center text-sm text-sacred-muted">
                           Your sanctuary is quiet for now.

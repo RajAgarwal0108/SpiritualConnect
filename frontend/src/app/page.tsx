@@ -53,12 +53,7 @@ export default function Home() {
   }, [user, router]);
 
   if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4 text-sacred-muted">
-        <Loader2 className="animate-spin text-sacred-gold" size={36} />
-        <p className="font-serif italic">Redirecting to sign in...</p>
-      </div>
-    );
+    return null;
   }
 
   if (commsLoading) {
