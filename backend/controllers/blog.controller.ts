@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import type { AuthRequest } from "../middlewares/auth.middleware";
+import { createNotification, createNotificationsBulk } from "../services/notification.service";
 
 export const getBlogs = async (req: Request, res: Response) => {
   try {
@@ -121,6 +122,21 @@ export const createBlog = async (req: AuthRequest, res: Response) => {
       }
     });
 
+    const followers = await prisma.follow.findMany({
+      where: { followingId: authorId },
+      select: { followerId: true },
+    });
+
+    await createNotificationsBulk(
+      followers.map((f) => ({
+        userId: f.followerId,
+        actorId: authorId,
+        type: "BLOG_PUBLISHED",
+        targetType: "BLOG",
+        targetId: String(blog.id),
+      }))
+    );
+
     res.status(201).json(blog);
   } catch (error) {
     res.status(500).json({ message: "Failed to create blog", error });
@@ -180,6 +196,21 @@ export const createBlogComment = async (req: AuthRequest, res: Response) => {
         }
       }
     });
+
+    const blog = await prisma.blog.findUnique({
+      where: { id: blogId },
+      select: { authorId: true },
+    });
+
+    if (blog?.authorId) {
+      await createNotification({
+        userId: blog.authorId,
+        actorId: authorId,
+        type: "BLOG_COMMENTED",
+        targetType: "BLOG",
+        targetId: String(blogId),
+      });
+    }
 
     res.status(201).json(comment);
   } catch (error) {

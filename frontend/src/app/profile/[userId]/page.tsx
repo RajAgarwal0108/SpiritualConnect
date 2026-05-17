@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import api from "@/services/api";
 import { getMediaUrl } from "@/lib/media";
 import { useAuthStore } from "@/store/globalStore";
-import { Loader2, Calendar, Edit, UserPlus, UserCheck, Sparkles, LogOut, Bookmark, HeartHandshake, ShieldCheck, Twitter, Instagram, Globe } from "lucide-react";
+import { Loader2, Calendar, Edit, UserPlus, UserCheck, Sparkles, LogOut, Bookmark, HeartHandshake, ShieldCheck, Twitter, Instagram, Globe, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Post, UserProfile } from "@/types";
@@ -131,18 +131,34 @@ export default function ProfilePage() {
                   <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     <Button 
                       onClick={() => followMutation.mutate()}
-                      variant={profile._count.followers > 0 ? "secondary" : "primary"}
+                      variant={profile.isConnected ? "secondary" : "primary"}
                       className="min-w-35 flex-1 md:flex-none"
                     >
                       {followMutation.isPending ? (
                         <Loader2 size={18} className="animate-spin" />
-                      ) : profile._count.followers > 0 ? (
+                      ) : profile.isConnected ? (
                         <><UserCheck size={18} className="mr-2" /><span>Connected</span></>
+                      ) : profile.isFollowing ? (
+                        <><UserCheck size={18} className="mr-2" /><span>Requested</span></>
                       ) : (
                         <><UserPlus size={18} className="mr-2" /><span>Connect</span></>
                       )}
                     </Button>
-                    
+
+                    {profile.isConnected ? (
+                      <Link href={`/chat?userId=${profile.id}`} className="flex-1 md:flex-none">
+                        <Button variant="secondary" className="w-full md:w-auto">
+                          <MessageCircle size={18} className="mr-2" />
+                          <span>Send Message</span>
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button variant="secondary" className="w-full md:w-auto" disabled>
+                        <MessageCircle size={18} className="mr-2" />
+                        <span>Connect to Message</span>
+                      </Button>
+                    )}
+
                     {profile.isGuide && profile.guideStatus === 'APPROVED' && (
                       <Link href={`/guidance/${profile.id}`} className="flex-1 md:flex-none">
                         <Button variant="primary" className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700">

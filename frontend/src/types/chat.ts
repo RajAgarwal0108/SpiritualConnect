@@ -25,6 +25,8 @@ export interface Conversation {
   latestMessage: string;
   latestAt: string;
   isOwnLastMessage: boolean;
+  unreadCount?: number;
+  type?: "dm" | "guidance";
 }
 
 export interface SocketMessagePayload {

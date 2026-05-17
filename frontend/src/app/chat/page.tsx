@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { Search, Loader2, User, Sparkles } from "lucide-react";
 import { useAuthStore } from "@/store/globalStore";
 import { useChatSocket } from "@/hooks/useChatSocket";
@@ -45,7 +46,20 @@ function ChatContent() {
     isPeerTyping,
     startTyping,
     stopTyping,
+    isBlocked,
   } = useDMChat(selectedUserId, user, socket);
+
+  const { data: selectedProfile } = useQuery({
+    queryKey: ["chatProfile", selectedUserId],
+    queryFn: async () => {
+      if (!selectedUserId) return null;
+      const res = await api.get(`/users/${selectedUserId}`);
+      return res.data;
+    },
+    enabled: !!selectedUserId,
+  });
+
+  const canMessage = !!selectedProfile?.isConnected;
 
   const conversations = allConversations.filter((c) => c.peer.id !== user?.id);
   const filteredConversations = conversations
@@ -200,6 +214,12 @@ function ChatContent() {
                   onStopTyping={stopTyping}
                   placeholder="Share a thought..."
                   layout="page"
+                  disabled={isBlocked || (!!selectedUserId && !canMessage)}
+                  disabledReason={
+                    isBlocked || (!!selectedUserId && !canMessage)
+                      ? "You can message only after you both connect."
+                      : undefined
+                  }
                 />
               </motion.div>
             ) : (

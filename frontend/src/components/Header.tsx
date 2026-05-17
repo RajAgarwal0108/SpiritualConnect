@@ -4,20 +4,36 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/store/globalStore";
 import { usePathname } from "next/navigation";
-import { MessageCircle, ShieldCheck, Menu, HeartHandshake } from "lucide-react";
+import { Bell, MessageCircle, ShieldCheck, Menu, HeartHandshake } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
 import { getMediaUrl } from "@/lib/media";
+import { useChatSocket } from "@/hooks/useChatSocket";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useConversationsList } from "@/hooks/useConversations";
 
 export default function Header() {
   const { user, logout } = useAuthStore();
   const { toggleRightSidebar, isRightSidebarOpen, toggleLeftSidebar, isLeftSidebarOpen } = useUIStore();
   const pathname = usePathname();
+  const isAuthPage = pathname === "/login" || pathname === "/register";
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const notificationRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const { socket } = useChatSocket();
+  const {
+    notifications,
+    unreadCount,
+    markAllRead,
+    refetchNotifications,
+    refetchUnreadCount,
+  } = useNotifications(socket, !!user && !isAuthPage);
+  const { data: conversations = [] } = useConversationsList(user?.id);
+  const dmUnreadTotal = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
   useEffect(() => {
     setMounted(true);
@@ -29,9 +45,15 @@ export default function Header() {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
+      if (notificationRef.current && !notificationRef.current.contains(e.target as Node)) {
+        setNotificationOpen(false);
+      }
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setNotificationOpen(false);
+      }
     }
     document.addEventListener("click", onDocClick);
     document.addEventListener("keydown", onKey);
@@ -44,7 +66,37 @@ export default function Header() {
   // Don't show header on admin pages (they have their own sidebar)
   if (pathname.startsWith("/admin")) return null;
 
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const formatNotification = (notification: typeof notifications[number]) => {
+    const actorName = notification.actor?.name || "Someone";
+
+    switch (notification.type) {
+      case "FOLLOW":
+        return { label: `${actorName} connected with you`, href: `/profile/${notification.actorId}` };
+      case "BLOG_PUBLISHED":
+        return { label: `${actorName} published a new blog`, href: `/blogs/${notification.targetId}` };
+      case "POST_LIKED":
+        return { label: `${actorName} liked your post`, href: `/posts/${notification.targetId}` };
+      case "POST_COMMENTED":
+        return { label: `${actorName} commented on your post`, href: `/posts/${notification.targetId}` };
+      case "BLOG_COMMENTED":
+        return { label: `${actorName} commented on your blog`, href: `/blogs/${notification.targetId}` };
+      case "MESSAGE_RECEIVED":
+        if (notification.targetType === "GUIDANCE_SESSION") {
+          return { label: `${actorName} sent a message in your guidance session`, href: `/guidance/session/${notification.targetId}` };
+        }
+        return { label: `${actorName} sent you a message`, href: `/chat?userId=${notification.actorId}` };
+      case "GUIDANCE_REQUESTED":
+        return { label: `${actorName} requested guidance`, href: "/profile/guidance" };
+      case "GUIDANCE_ACCEPTED":
+        return { label: "Your guidance request was accepted", href: `/guidance/session/${notification.targetId}` };
+      case "GUIDANCE_REJECTED":
+        return { label: "Your guidance request was declined", href: "/profile/guidance" };
+      case "GUIDANCE_UPDATED":
+        return { label: "Guidance session updated", href: `/guidance/session/${notification.targetId}` };
+      default:
+        return { label: "You have a new update", href: "/" };
+    }
+  };
 
   return (
     <header className="glass-panel sticky top-0 z-50 border-b-0">
@@ -74,20 +126,106 @@ export default function Header() {
           <div className="flex items-center space-x-2 md:space-x-3">
             {/* Chat Toggle Button */}
             {user && !isAuthPage && (
-              <button 
-                onClick={toggleRightSidebar}
-                className={`p-1.5 md:p-2 rounded-xl transition-all duration-300 flex items-center justify-center ${isRightSidebarOpen ? 'bg-sacred-gold text-white shadow-lg shadow-sacred-gold/20' : 'hover:bg-sacred-gold/10 text-sacred-muted hover:text-sacred-gold'}`}
-                title="Conversations"
-              >
-                <MessageCircle className={`w-5 h-5 md:w-6 md:h-6 ${isRightSidebarOpen ? 'scale-110' : ''}`} />
-                <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.2em] hidden md:inline">Conversations</span>
-              </button>
+              <div className="relative">
+                <button 
+                  onClick={toggleRightSidebar}
+                  className={`p-1.5 md:p-2 rounded-xl transition-all duration-300 flex items-center justify-center ${isRightSidebarOpen ? 'bg-sacred-gold text-white shadow-lg shadow-sacred-gold/20' : 'hover:bg-sacred-gold/10 text-sacred-muted hover:text-sacred-gold'}`}
+                  title="Conversations"
+                >
+                  <MessageCircle className={`w-5 h-5 md:w-6 md:h-6 ${isRightSidebarOpen ? 'scale-110' : ''}`} />
+                  <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.2em] hidden md:inline">Conversations</span>
+                </button>
+                {dmUnreadTotal > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                    {dmUnreadTotal > 9 ? "9+" : dmUnreadTotal}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {user && !isAuthPage && (
+              <div className="relative" ref={notificationRef}>
+                <button
+                  onClick={async () => {
+                    const next = !notificationOpen;
+                    setNotificationOpen(next);
+                    if (next) {
+                      await refetchNotifications();
+                      const { data } = await refetchUnreadCount();
+                      const latestCount = typeof data === "number" ? data : unreadCount;
+                      if (latestCount > 0) {
+                        await markAllRead();
+                      }
+                    }
+                  }}
+                  className="p-1.5 md:p-2 rounded-xl transition-all duration-300 flex items-center justify-center hover:bg-sacred-gold/10 text-sacred-muted hover:text-sacred-gold relative"
+                  title="Notifications"
+                >
+                  <Bell className="w-5 h-5 md:w-6 md:h-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {notificationOpen && (
+                  <div className="absolute right-0 top-10 w-[92vw] max-w-sm md:w-96 bg-white/90 backdrop-blur-md border border-white/40 rounded-2xl shadow-xl z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-sacred-border/20 flex items-center justify-between">
+                      <p className="text-sm font-semibold text-sacred-text">Notifications</p>
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-sacred-muted">Recent</span>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-8 text-center text-sm text-sacred-muted">
+                          Your sanctuary is quiet for now.
+                        </div>
+                      ) : (
+                        notifications.map((notification) => {
+                          const { label, href } = formatNotification(notification);
+                          const isUnread = !notification.readAt;
+                          return (
+                            <Link
+                              key={notification.id}
+                              href={href}
+                              onClick={() => setNotificationOpen(false)}
+                              className={`flex items-start gap-3 px-4 py-3 border-b border-sacred-border/10 hover:bg-sacred-beige/30 transition-colors ${isUnread ? "bg-sacred-gold/5" : ""}`}
+                            >
+                              <div className="shrink-0">
+                                {notification.actor?.profile?.avatar ? (
+                                  <Image
+                                    src={getMediaUrl(notification.actor.profile.avatar) as string}
+                                    alt={notification.actor?.name || "User"}
+                                    width={32}
+                                    height={32}
+                                    className="w-8 h-8 rounded-full object-cover border border-sacred-border"
+                                  />
+                                ) : (
+                                  <div className="w-8 h-8 rounded-full bg-sacred-gold/10 flex items-center justify-center text-sacred-gold font-bold text-[10px] border border-sacred-gold/20">
+                                    {(notification.actor?.name || "U")[0]}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-sacred-text leading-snug">{label}</p>
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-sacred-muted mt-1">
+                                  {new Date(notification.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </Link>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {user?.role === 'ADMIN' && (
               <Link 
                 href="/admin/dashboard" 
-                className="p-1.5 md:p-2 rounded-xl hover:bg-sacred-gold/10 text-sacred-gold transition-all duration-300 flex items-center justify-center group"
+                className="hidden md:flex p-1.5 md:p-2 rounded-xl hover:bg-sacred-gold/10 text-sacred-gold transition-all duration-300 items-center justify-center group"
                 title="Admin Dashboard"
               >
                 <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110" />
@@ -98,7 +236,7 @@ export default function Header() {
             {user && (
               <Link 
                 href="/profile/guidance" 
-                className="p-1.5 md:p-2 rounded-xl hover:bg-sacred-gold/10 text-sacred-gold transition-all duration-300 flex items-center justify-center group"
+                className="hidden md:flex p-1.5 md:p-2 rounded-xl hover:bg-sacred-gold/10 text-sacred-gold transition-all duration-300 items-center justify-center group"
                 title="Guidance Dashboard"
               >
                 <HeartHandshake className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110" />
@@ -142,6 +280,14 @@ export default function Header() {
                         Admin Panel
                       </Link>
                     )}
+                    <Link
+                      href="/profile/guidance"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-sacred-text hover:bg-sacred-beige/30"
+                    >
+                      <HeartHandshake size={16} />
+                      Guidance
+                    </Link>
                     <Link href="/settings/account" className="block px-4 py-3 text-sm text-sacred-text hover:bg-sacred-beige/30">Settings</Link>
                     <button
                       onClick={() => {

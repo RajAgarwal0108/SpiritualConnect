@@ -19,6 +19,7 @@ interface Seeker {
   };
   communities?: { community: { name: string } }[];
   followers?: { followerId: number }[];
+    isConnected?: boolean;
 }
 
 export default function ExplorePeople() {
@@ -116,11 +117,15 @@ export default function ExplorePeople() {
                                         <Button 
                                             variant="ghost" 
                                             className="rounded-full w-12 h-12 p-0 flex items-center justify-center text-sacred-muted hover:text-sacred-gold bg-white/40 border border-white/20"
-                                            onClick={() => openChatWith({
-                                                id: seeker.id,
-                                                name: seeker.name,
-                                                avatar: seeker.profile?.avatar
-                                            })}
+                                            disabled={!seeker.isConnected}
+                                            onClick={() => {
+                                                if (!seeker.isConnected) return;
+                                                openChatWith({
+                                                    id: seeker.id,
+                                                    name: seeker.name,
+                                                    avatar: seeker.profile?.avatar
+                                                });
+                                            }}
                                         >
                                             <MessageCircle size={20} />
                                         </Button>

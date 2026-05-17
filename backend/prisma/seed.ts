@@ -93,7 +93,13 @@ async function main() {
     { email: "guide.isha@spiritual.com", name: "Isha Raina", bio: "Guiding seekers through breath and inner quiet.", interest: "Meditation", title: "Meditation Guide" },
     { email: "guide.kiran@spiritual.com", name: "Kiran Sol", bio: "Helping people align with purposeful living.", interest: "Purpose", title: "Purpose Coach" },
     { email: "guide.dev@spiritual.com", name: "Devika Rai", bio: "Compassion practices for a tender heart.", interest: "Compassion", title: "Compassion Mentor" },
-    { email: "guide.arya@spiritual.com", name: "Arya Sen", bio: "Ancient wisdom made simple and grounded.", interest: "Dharma", title: "Wisdom Guide" }
+    { email: "guide.arya@spiritual.com", name: "Arya Sen", bio: "Ancient wisdom made simple and grounded.", interest: "Dharma", title: "Wisdom Guide" },
+    { email: "guide.nadia@spiritual.com", name: "Nadia Moon", bio: "Holding space for grief, growth, and grace.", interest: "Healing", title: "Grief & Healing Guide" },
+    { email: "guide.rishi@spiritual.com", name: "Rishi Prakash", bio: "Breathwork and mantra for the modern seeker.", interest: "Breathwork", title: "Breathwork Facilitator" },
+    { email: "guide.kali@spiritual.com", name: "Kali Amrit", bio: "Helping sensitive souls find their grounded power.", interest: "Inner Fire", title: "Empowerment Coach" },
+    { email: "guide.surya@spiritual.com", name: "Surya Devi", bio: "Yoga philosophy and daily sadhana guidance.", interest: "Yoga", title: "Yoga & Philosophy Mentor" },
+    { email: "guide.anand@spiritual.com", name: "Anand Veer", bio: "Mindfulness-based emotional resilience coaching.", interest: "Mindfulness", title: "Mindfulness Coach" },
+    { email: "guide.meera@spiritual.com", name: "Meera Chand", bio: "Devotional path guidance through song and silence.", interest: "Devotion", title: "Bhakti Guide" }
   ];
 
   const allProfiles = [...demoUsers, ...guideProfiles];
@@ -363,6 +369,97 @@ async function main() {
               metadata: { question: "What kind of day do you want to cultivate?", category: "Reflection" }
             }
           ]
+        });
+      }
+    }
+  }
+
+  // Additional guidance sessions with richer variety
+  const seekersCopy = [...seekers];
+  for (const [guideIndex, guide] of guides.entries()) {
+    for (let i = 0; i < 2; i += 1) {
+      const seekerIdx = (guideIndex * 3 + i + 7) % seekersCopy.length;
+      const seeker = seekersCopy[seekerIdx];
+      const sessionExists = await prisma.guidanceSession.findUnique({
+        where: { userId_guideId: { userId: seeker.id, guideId: guide.id } }
+      });
+      if (!sessionExists) {
+        const statuses: ("PENDING" | "ACCEPTED" | "COMPLETED")[] = ["PENDING", "ACCEPTED", "COMPLETED"];
+        const status = statuses[i % 3];
+        const moods = ["anxious but hopeful", "seeking clarity", "grateful and open", "struggling with purpose", "peaceful", "healing slowly"];
+        const goals = ["Navigating a life transition", "Healing from loss", "Finding daily discipline", "Understanding my purpose", "Managing anxiety", "Deepening my meditation practice"];
+        const summaries: (string | null)[] = [
+          null, null,
+          "We identified three key practices to ground during uncertainty.",
+          "Established a morning routine with breathwork and journaling.",
+          "Explored the root of the anxiety and found a mantra that resonates.",
+          "Created a personalized meditation roadmap."
+        ];
+        const session = await prisma.guidanceSession.create({
+          data: {
+            userId: seeker.id,
+            guideId: guide.id,
+            status,
+            mood: moods[(guideIndex + i) % moods.length],
+            goal: goals[(guideIndex * 2 + i) % goals.length],
+            summary: status === "COMPLETED" ? summaries[(guideIndex + i) % summaries.length] : null
+          }
+        });
+
+        const msgPayload: { senderId: number; content: string; type: string; metadata?: Record<string, unknown> }[] = [
+          {
+            senderId: seeker.id,
+            content: `${seedTag} Hi, I could really use some support with ${goals[(guideIndex * 2 + i) % goals.length].toLowerCase()}.`,
+            type: "TEXT"
+          },
+          {
+            senderId: guide.id,
+            content: `${seedTag} Thank you for reaching out. Let's start by understanding where you feel this most in your body.`,
+            type: "TEXT"
+          },
+          {
+            senderId: guide.id,
+            content: `${seedTag} Here is a gentle practice to try before our next reflection.`,
+            type: "ROUTINE",
+            metadata: { title: "Morning Grounding Ritual", steps: ["Three deep breaths", "Set one intention", "Place hand on heart", "Whisper a gratitude"], duration: "5 min", focus: "Grounding" }
+          }
+        ];
+
+        if (status !== "PENDING") {
+          msgPayload.push({
+            senderId: seeker.id,
+            content: `${seedTag} I tried the practice and it helped me feel more centered. Thank you.`,
+            type: "TEXT"
+          });
+          msgPayload.push({
+            senderId: guide.id,
+            content: `${seedTag} That is wonderful. Let me offer you a reflection for the week ahead.`,
+            type: "QUESTION",
+            metadata: { question: "What would it look like to meet this week with softness instead of force?", category: "Reflection" }
+          });
+        }
+
+        if (status === "COMPLETED") {
+          msgPayload.push({
+            senderId: seeker.id,
+            content: `${seedTag} I feel more grounded than when I started. Thank you for your guidance.`,
+            type: "TEXT"
+          });
+          msgPayload.push({
+            senderId: guide.id,
+            content: `${seedTag} You did the work. Carry this gentle awareness with you always.`,
+            type: "TEXT"
+          });
+        }
+
+        await prisma.guidanceMessage.createMany({
+          data: msgPayload.map((m) => ({
+            sessionId: session.id,
+            senderId: m.senderId,
+            content: m.content,
+            type: m.type,
+            metadata: m.metadata
+          }))
         });
       }
     }

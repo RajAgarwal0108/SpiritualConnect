@@ -17,6 +17,7 @@ export function useDMChat(
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -37,6 +38,7 @@ export function useDMChat(
     if (!roomId || !socket) return;
     setIsLoading(true);
     socket.emit("join_room", roomId);
+    setIsBlocked(false);
 
     try {
       const res = await api.get<DMMessage[]>(`/messages/room/${roomId}?limit=50`);
@@ -44,7 +46,11 @@ export function useDMChat(
       setMessages(msgs);
       setCursor(msgs.length > 0 ? msgs[0].createdAt || null : null);
       setHasMore(msgs.length === 50);
-    } catch {
+    } catch (error) {
+      const status = (error as any)?.response?.status;
+      if (status === 403) {
+        setIsBlocked(true);
+      }
       setMessages([]);
     } finally {
       setIsLoading(false);
@@ -129,5 +135,6 @@ export function useDMChat(
     startTyping,
     stopTyping,
     roomId,
+    isBlocked,
   };
 }

@@ -130,4 +130,7 @@ export interface UserProfile extends User {
     followers: number;
     following: number;
   };
+  isFollowing?: boolean;
+  isFollowedBy?: boolean;
+  isConnected?: boolean;
 }

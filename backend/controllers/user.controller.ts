@@ -1,7 +1,22 @@
 import type { Response } from "express";
+import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma";
 import type { AuthRequest } from "../middlewares/auth.middleware";
 import { getOnlineUserIds } from "../services/presence.service";
+import { createNotification } from "../services/notification.service";
+
+const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
+
+const getTokenUserId = (req: AuthRequest): number | undefined => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return undefined;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
+    return decoded.id;
+  } catch {
+    return undefined;
+  }
+};
 
 export const getUserProfile = async (req: AuthRequest, res: Response) => {
   try {
@@ -12,6 +27,8 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
     if (isNaN(userId)) {
         return res.status(400).json({ message: "Invalid user ID" });
     }
+
+    const currentUserId = req.user?.id ?? getTokenUserId(req);
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -38,7 +55,9 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
             following: true,
             communities: true // 'communities' corresponds to 'memberships' in schema relations
           }
-        }
+        },
+        followers: currentUserId ? { where: { followerId: currentUserId }, select: { id: true } } : false,
+        following: currentUserId ? { where: { followingId: currentUserId }, select: { id: true } } : false
       }
     });
 
@@ -46,14 +65,20 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
     
     // Map internal 'communities' count to 'memberships' for frontend compatibility
     // Also map 'communities' array to 'memberships' property
-    const { communities, ...userMsg } = user;
+    const { communities, followers, following, ...userMsg } = user as any;
+    const isFollowing = currentUserId ? Array.isArray(followers) && followers.length > 0 : false;
+    const isFollowedBy = currentUserId ? Array.isArray(following) && following.length > 0 : false;
+    const isConnected = isFollowing && isFollowedBy;
     const responseWithCounts = {
         ...userMsg,
         memberships: communities,
         _count: {
             ...user._count,
             memberships: user._count.communities
-        }
+      },
+      isFollowing,
+      isFollowedBy,
+      isConnected
     };
 
     res.json(responseWithCounts);
@@ -148,6 +173,14 @@ export const followUser = async (req: AuthRequest, res: Response) => {
       data: { followerId, followingId }
     });
 
+    await createNotification({
+      userId: followingId,
+      actorId: followerId,
+      type: "FOLLOW",
+      targetType: "USER",
+      targetId: String(followerId),
+    });
+
     res.json({ message: "Followed successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to follow/unfollow user", error });
@@ -173,15 +206,23 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
         _count: {
           select: { followers: true, following: true, posts: true }
         },
-        followers: currentUserId ? { where: { followerId: currentUserId }, select: { id: true } } : false
+        followers: currentUserId ? { where: { followerId: currentUserId }, select: { id: true } } : false,
+        following: currentUserId ? { where: { followingId: currentUserId }, select: { id: true } } : false
       }
     });
 
-    const usersWithFollowStatus = users.map((u: any) => ({
-      ...u,
-      isFollowing: currentUserId ? Array.isArray(u.followers) && u.followers.length > 0 : false,
-      followers: undefined // remove the nested followers array from response
-    }));
+    const usersWithFollowStatus = users.map((u: any) => {
+      const isFollowing = currentUserId ? Array.isArray(u.followers) && u.followers.length > 0 : false;
+      const isFollowedBy = currentUserId ? Array.isArray(u.following) && u.following.length > 0 : false;
+      return {
+        ...u,
+        isFollowing,
+        isFollowedBy,
+        isConnected: isFollowing && isFollowedBy,
+        followers: undefined,
+        following: undefined
+      };
+    });
 
     res.json(usersWithFollowStatus);
   } catch (error) {

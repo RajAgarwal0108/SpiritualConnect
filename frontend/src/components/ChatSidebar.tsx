@@ -5,8 +5,9 @@ import { Search, ChevronLeft, X, Maximize2, Minimize2 } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 import { useAuthStore } from "@/store/globalStore";
 import { useChatSocket } from "@/hooks/useChatSocket";
-import { useConversationsList, useOnlineUsers } from "@/hooks/useConversations";
+import { useConversationsList, useOnlineUsers, markConversationRead } from "@/hooks/useConversations";
 import { useDMChat } from "@/hooks/useDMChat";
+import { useQueryClient } from "@tanstack/react-query";
 import ConversationItem from "@/components/chat/ConversationItem";
 import MessageBubble from "@/components/chat/MessageBubble";
 import MessageInput from "@/components/chat/MessageInput";
@@ -19,6 +20,7 @@ export default function ChatSidebar() {
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
   const [activeChatUser, setActiveChatUser] = useState<{ id: number; name: string; avatar?: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const queryClient = useQueryClient();
 
   const { socket } = useChatSocket();
   const { data: conversations = [] } = useConversationsList(user?.id);
@@ -38,6 +40,17 @@ export default function ChatSidebar() {
     });
     clearChatTarget();
   }, [chatTarget, clearChatTarget]);
+
+  useEffect(() => {
+    if (!socket || !user) return;
+    const handler = (notification: any) => {
+      if (notification.type === "MESSAGE_RECEIVED") {
+        queryClient.invalidateQueries({ queryKey: ["dmConversations", user.id] });
+      }
+    };
+    socket.on("notification", handler);
+    return () => { socket.off("notification", handler); };
+  }, [socket, user, queryClient]);
 
   const filteredConversations = (conversations || [])
     .filter((c) => c.peer.id !== user?.id)
@@ -134,6 +147,7 @@ export default function ChatSidebar() {
                   onSelect={() => {
                     setActiveChatId(conversation.peer.id);
                     setActiveChatUser(conversation.peer);
+                    markConversationRead(conversation.room);
                   }}
                   layout="sidebar"
                 />

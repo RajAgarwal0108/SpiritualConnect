@@ -17,11 +17,13 @@ import threadRoutes from "./routes/thread.routes";
 import aiRoutes from "./routes/ai.routes";
 import guidanceRoutes from "./routes/guidance.routes";
 import courseRoutes from "./routes/course.routes";
+import notificationRoutes from "./routes/notification.routes";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { StorageService } from "./services/storage.service";
 import { registerUserSocket, unregisterUserSocket, getOnlineUserIds } from "./services/presence.service";
+import { createNotification, setNotificationEmitter } from "./services/notification.service";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 
@@ -88,6 +90,8 @@ const io = new Server(httpServer, {
   cors: corsOptions,
 });
 
+setNotificationEmitter(io);
+
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) return next(new Error("Authentication required"));
@@ -112,18 +116,37 @@ const selectOnlineUserFields = {
 };
 
 const emitOnlineUsers = async () => {
-  const onlineIds = getOnlineUserIds();
-  if (onlineIds.length === 0) {
-    io.emit("online_users", []);
-    return;
-  }
+  try {
+    const onlineIds = getOnlineUserIds();
+    if (onlineIds.length === 0) {
+      io.emit("online_users", []);
+      return;
+    }
 
-  const users = await prisma.user.findMany({
-    where: { id: { in: onlineIds } },
-    select: selectOnlineUserFields,
+    const users = await prisma.user.findMany({
+      where: { id: { in: onlineIds } },
+      select: selectOnlineUserFields,
+    });
+
+    io.emit("online_users", users);
+  } catch (err) {
+    console.error("Failed to emit online users:", err);
+  }
+};
+
+const isMutualConnection = async (userId: number, peerId: number) => {
+  if (!Number.isInteger(userId) || !Number.isInteger(peerId)) return false;
+
+  const count = await prisma.follow.count({
+    where: {
+      OR: [
+        { followerId: userId, followingId: peerId },
+        { followerId: peerId, followingId: userId },
+      ],
+    },
   });
 
-  io.emit("online_users", users);
+  return count >= 2;
 };
 
 const port = process.env.PORT || 3001;
@@ -221,6 +244,7 @@ app.use("/api/ai", aiRoutes);
 // Guidance Routes
 app.use("/api/guidance", guidanceRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -239,6 +263,11 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
+  const authUser = (socket as any).user as { id: number } | undefined;
+  if (authUser?.id) {
+    socket.join(`user_${authUser.id}`);
+  }
+
   socket.on("join_room", (room: string) => {
     socket.join(room);
     console.log(`User ${socket.id} joined room: ${room}`);
@@ -250,24 +279,58 @@ io.on("connection", (socket) => {
   });
 
   socket.on("user_online", async (userId: number) => {
-    if (typeof userId !== "number" || Number.isNaN(userId)) return;
-    registerUserSocket(userId, socket.id);
-    await emitOnlineUsers();
+    try {
+      if (typeof userId !== "number" || Number.isNaN(userId)) return;
+      registerUserSocket(userId, socket.id);
+      await emitOnlineUsers();
+    } catch (err) {
+      console.error("Error in user_online handler:", err);
+    }
   });
 
   socket.on("send_message", async (data: any) => {
     // data: { room, message, sender, senderId, senderName }
     try {
+      const room = String(data.room || "");
+      const senderId = Number(data.senderId);
+      const parts = room.split("-");
+
+      if (!room || !Number.isInteger(senderId) || parts.length !== 2) return;
+
+      const a = Number(parts[0]);
+      const b = Number(parts[1]);
+      if (!Number.isInteger(a) || !Number.isInteger(b)) return;
+
+      if (![a, b].includes(senderId)) return;
+
+      const peerId = a === senderId ? b : a;
+      const isConnected = await isMutualConnection(senderId, peerId);
+      if (!isConnected) return;
+
       const saved = await prisma.message.create({
         data: {
-          room: data.room,
-          senderId: data.senderId || 0,
+          room,
+          senderId,
           senderName: data.sender || data.senderName || "",
           content: data.message,
         },
       });
       // emit the saved message (includes id and createdAt)
-      io.to(data.room).emit("receive_message", saved);
+      io.to(room).emit("receive_message", saved);
+
+      const recipientId = Number(parts[0]) === senderId
+        ? Number(parts[1])
+        : Number(parts[0]);
+
+      if (recipientId && Number.isInteger(recipientId)) {
+        await createNotification({
+          userId: recipientId,
+          actorId: senderId,
+          type: "MESSAGE_RECEIVED",
+          targetType: "MESSAGE",
+          targetId: String(saved.id),
+        });
+      }
       return;
     } catch (err) {
       console.error("Failed to save chat message:", err);
@@ -278,18 +341,35 @@ io.on("connection", (socket) => {
     // data: { sessionId, senderId, content, type, metadata }
     try {
       const { sessionId, senderId, content, type, metadata } = data;
-      // You should ideally check if it's strictly authorized but we'll trust the provided ids
+      const parsedSenderId = parseInt(senderId);
       const saved = await prisma.guidanceMessage.create({
         data: {
           sessionId,
-          senderId: parseInt(senderId),
+          senderId: parsedSenderId,
           content: content || "",
           type: type || "TEXT",
           metadata: metadata || null,
         }
       });
-      
+
       io.to(`guidance_${sessionId}`).emit("receive_guidance_message", saved);
+
+      // Notify the other participant in the session
+      const session = await prisma.guidanceSession.findUnique({
+        where: { id: sessionId },
+        select: { userId: true, guideId: true },
+      });
+      if (session) {
+        const recipientId = session.userId === parsedSenderId ? session.guideId : session.userId;
+        const notif = await createNotification({
+          userId: recipientId,
+          actorId: parsedSenderId,
+          type: "MESSAGE_RECEIVED",
+          targetType: "GUIDANCE_SESSION",
+          targetId: sessionId,
+        });
+        console.log(`[guidance] Notification created for user ${recipientId}:`, notif?.id);
+      }
     } catch (err) {
       console.error("Failed to save guidance message:", err);
     }

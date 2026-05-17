@@ -33,24 +33,44 @@ model User {
   guidanceGuideSessions GuidanceSession[] @relation("GuidanceGuide")
   GuidanceMessage       GuidanceMessage[]
 
-  blogs              Blog[]
-  blogComments       BlogComment[]
-  bookmarks          Bookmark[]
-  comments           Comment[]
-  communities        CommunityMembership[]
-  enrollments        CourseEnrollment[]
-  following          Follow[]              @relation("following")
-  followers          Follow[]              @relation("followers")
-  threads            Thread[]
-  threadReplies      ThreadReply[]
-  likes              Like[]
-  posts              Post[]
-  profile            Profile?
-  RefreshToken       RefreshToken[]
-  reportsMade        Report[]              @relation("reporter")
-  verificationTokens VerificationToken[]   @relation("UserVerificationTokens")
+  blogs                 Blog[]
+  blogComments          BlogComment[]
+  bookmarks             Bookmark[]
+  comments              Comment[]
+  communities           CommunityMembership[]
+  enrollments           CourseEnrollment[]
+  following             Follow[]              @relation("following")
+  followers             Follow[]              @relation("followers")
+  threads               Thread[]
+  threadReplies         ThreadReply[]
+  likes                 Like[]
+  posts                 Post[]
+  profile               Profile?
+  RefreshToken          RefreshToken[]
+  reportsMade           Report[]              @relation("reporter")
+  verificationTokens    VerificationToken[]   @relation("UserVerificationTokens")
+  notificationsReceived Notification[]        @relation("NotificationRecipient")
+  notificationsSent     Notification[]        @relation("NotificationActor")
 
   @@index([isGuide, guideStatus])
+}
+
+model Notification {
+  id         Int                    @id @default(autoincrement())
+  userId     Int
+  actorId    Int?
+  type       NotificationType
+  targetType NotificationTargetType
+  targetId   String?
+  readAt     DateTime?
+  createdAt  DateTime               @default(now())
+
+  user  User  @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User? @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
 
 model Profile {
@@ -353,6 +373,28 @@ enum Role {
   ADMIN
 }
 
+enum NotificationType {
+  FOLLOW
+  BLOG_PUBLISHED
+  POST_LIKED
+  POST_COMMENTED
+  BLOG_LIKED
+  BLOG_COMMENTED
+  MESSAGE_RECEIVED
+  GUIDANCE_REQUESTED
+  GUIDANCE_ACCEPTED
+  GUIDANCE_REJECTED
+  GUIDANCE_UPDATED
+}
+
+enum NotificationTargetType {
+  USER
+  POST
+  BLOG
+  MESSAGE
+  GUIDANCE_SESSION
+}
+
 enum ThreadReplyType {
   GENERAL
   BLESSING
@@ -377,9 +419,9 @@ model GuidanceSession {
   guideId         Int
   status          SessionStatus     @default(PENDING)
   isDetailsShared Boolean           @default(false)
-  mood            String?           // Optional mood tracking at start
-  goal            String?           // Core session intent
-  summary         String?           // Post-session wisdom from guide
+  mood            String? // Optional mood tracking at start
+  goal            String? // Core session intent
+  summary         String? // Post-session wisdom from guide
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   user            User              @relation("GuidanceSeeker", fields: [userId], references: [id], onDelete: Cascade)
@@ -397,7 +439,7 @@ model GuidanceMessage {
   senderId  Int
   content   String
   type      String          @default("TEXT") // TEXT, ROUTINE, QUESTION, PROFILE_SHARE
-  metadata  Json?           // Structured data for rich cards
+  metadata  Json? // Structured data for rich cards
   createdAt DateTime        @default(now())
   session   GuidanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sender    User            @relation(fields: [senderId], references: [id], onDelete: Cascade)
@@ -406,3 +448,5 @@ model GuidanceMessage {
   @@index([senderId])
   @@index([createdAt])
 }
+
+// --- End of schema ---

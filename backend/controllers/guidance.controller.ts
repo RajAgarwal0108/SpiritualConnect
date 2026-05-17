@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import type { AuthRequest } from '../middlewares/auth.middleware';
+import { createNotification } from '../services/notification.service';
 
 export const applyForGuide = async (req: AuthRequest, res: Response) => {
   try {
@@ -87,6 +88,14 @@ export const requestSession = async (req: AuthRequest, res: Response) => {
     const session = await prisma.guidanceSession.create({
       data: { userId, guideId: parseInt(guideId), status: 'PENDING' }
     });
+
+    await createNotification({
+      userId: parseInt(guideId),
+      actorId: userId,
+      type: 'GUIDANCE_REQUESTED',
+      targetType: 'GUIDANCE_SESSION',
+      targetId: session.id,
+    });
     res.status(201).json({ message: 'Session requested', session });
   } catch (error) {
     console.error('Error requesting session:', error);
@@ -126,6 +135,14 @@ export const respondToSession = async (req: AuthRequest, res: Response) => {
     const updatedSession = await prisma.guidanceSession.update({
       where: { id: sessionId }, data
     });
+
+    await createNotification({
+      userId: updatedSession.userId,
+      actorId: guideId,
+      type: status === 'ACCEPTED' ? 'GUIDANCE_ACCEPTED' : 'GUIDANCE_REJECTED',
+      targetType: 'GUIDANCE_SESSION',
+      targetId: updatedSession.id,
+    });
     res.status(200).json({ message: 'Session updated', session: updatedSession });
   } catch (error) {
     console.error('Error responding to session:', error);
@@ -154,6 +171,15 @@ export const updateSessionIntent = async (req: AuthRequest, res: Response) => {
       data
     });
 
+    const otherUserId = session.userId === userId ? session.guideId : session.userId;
+    await createNotification({
+      userId: otherUserId,
+      actorId: userId,
+      type: 'GUIDANCE_UPDATED',
+      targetType: 'GUIDANCE_SESSION',
+      targetId: updated.id,
+    });
+
     res.status(200).json(updated);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -164,7 +190,8 @@ export const getSessions = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const sessions = await prisma.guidanceSession.findMany({
-      where: { OR: [{ userId, status: 'ACCEPTED' }, { guideId: userId, status: 'ACCEPTED' }] },
+      where: { OR: [{ userId }, { guideId: userId }] },
+      orderBy: { updatedAt: 'desc' },
       include: {
         user: { select: { id: true, name: true, phoneNumber: true, profile: { select: { avatar: true } } } },
         guide: { select: { id: true, name: true, guideTitle: true, profile: { select: { avatar: true } } } }
@@ -199,6 +226,41 @@ export const getSessionMessages = async (req: AuthRequest, res: Response) => {
     res.status(200).json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const completeSession = async (req: AuthRequest, res: Response) => {
+  try {
+    const guideId = req.user!.id;
+    const sessionId = req.params.sessionId as string;
+    const { summary, blessing } = req.body;
+
+    const session = await prisma.guidanceSession.findFirst({
+      where: { id: sessionId, guideId, status: 'ACCEPTED' }
+    });
+    if (!session) return res.status(404).json({ error: 'Active session not found' });
+
+    const updated = await prisma.guidanceSession.update({
+      where: { id: sessionId },
+      data: {
+        status: 'COMPLETED',
+        summary: summary || null,
+        goal: blessing ? `Blessing: ${blessing}` : session.goal,
+      }
+    });
+
+    await createNotification({
+      userId: session.userId,
+      actorId: guideId,
+      type: 'GUIDANCE_UPDATED',
+      targetType: 'GUIDANCE_SESSION',
+      targetId: session.id,
+    });
+
+    res.status(200).json({ message: 'Session completed', session: updated });
+  } catch (error) {
+    console.error('Error completing session:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

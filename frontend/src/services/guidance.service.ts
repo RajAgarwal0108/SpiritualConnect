@@ -54,6 +54,11 @@ export const guidanceService = {
     return response.data;
   },
 
+  completeSession: async (sessionId: string, data: { summary: string; blessing: string }) => {
+    const response = await api.patch(`/guidance/sessions/${sessionId}/complete`, data);
+    return response.data;
+  },
+
   // Admin Api
   getAdminApplications: async (): Promise<GuideApplication[]> => {
     const response = await api.get('/admin/guide-applications');

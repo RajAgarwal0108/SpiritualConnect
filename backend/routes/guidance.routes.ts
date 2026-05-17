@@ -9,7 +9,8 @@ import {
   getSessions, 
   getSessionMessages, 
   shareSessionDetails,
-  updateSessionIntent 
+  updateSessionIntent,
+  completeSession 
 } from '../controllers/guidance.controller';
 import { authenticate } from '../middlewares/auth.middleware';
 
@@ -28,5 +29,6 @@ router.patch('/sessions/:sessionId/respond', authenticate, respondToSession);
 router.get('/sessions/:sessionId/messages', authenticate, getSessionMessages);
 router.patch('/sessions/:sessionId/share-details', authenticate, shareSessionDetails);
 router.patch('/sessions/:sessionId/intent', authenticate, updateSessionIntent);
+router.patch('/sessions/:sessionId/complete', authenticate, completeSession);
 
 export default router;

@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import { prisma } from "../lib/prisma";
 import type { AuthRequest } from "../middlewares/auth.middleware";
+import { createNotification } from "../services/notification.service";
 
 export const getPosts = async (req: AuthRequest, res: Response) => {
   try {
@@ -147,6 +148,21 @@ export const createComment = async (req: AuthRequest, res: Response) => {
       where: { postId }
     });
 
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { authorId: true },
+    });
+
+    if (post?.authorId) {
+      await createNotification({
+        userId: post.authorId,
+        actorId: authorId,
+        type: "POST_COMMENTED",
+        targetType: "POST",
+        targetId: String(postId),
+      });
+    }
+
     res.status(201).json({ ...comment, commentCount });
   } catch (error) {
     console.error("Comment creation error:", error);
@@ -205,6 +221,19 @@ export const likePost = async (req: AuthRequest, res: Response) => {
     }
 
     await prisma.like.create({ data: { userId, postId } });
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { authorId: true },
+    });
+    if (post?.authorId) {
+      await createNotification({
+        userId: post.authorId,
+        actorId: userId,
+        type: "POST_LIKED",
+        targetType: "POST",
+        targetId: String(postId),
+      });
+    }
     const likeCount = await prisma.like.count({ where: { postId } });
     res.json({ message: "Post liked", isLiked: true, likeCount });
   } catch (error) {

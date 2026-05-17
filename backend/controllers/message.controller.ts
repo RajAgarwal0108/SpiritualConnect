@@ -1,6 +1,22 @@
 import type { Response } from "express";
 import type { AuthRequest } from "../middlewares/auth.middleware";
 import { prisma } from "../lib/prisma";
+import { createNotification } from "../services/notification.service";
+
+const isMutualConnection = async (userId: number, peerId: number) => {
+  if (!Number.isInteger(userId) || !Number.isInteger(peerId)) return false;
+
+  const count = await prisma.follow.count({
+    where: {
+      OR: [
+        { followerId: userId, followingId: peerId },
+        { followerId: peerId, followingId: userId },
+      ],
+    },
+  });
+
+  return count >= 2;
+};
 
 export const getMessagesByRoom = async (req: AuthRequest, res: Response) => {
   const { room } = req.params as { room: string };
@@ -17,6 +33,18 @@ export const getMessagesByRoom = async (req: AuthRequest, res: Response) => {
   const parts = room.split("-");
   if (parts.length !== 2 || ![parts[0], parts[1]].includes(String(userId))) {
     return res.status(403).json({ message: "Access denied to this room" });
+  }
+
+  const a = Number(parts[0]);
+  const b = Number(parts[1]);
+  if (!Number.isInteger(a) || !Number.isInteger(b)) {
+    return res.status(400).json({ message: "Invalid room id" });
+  }
+
+  const peerId = a === userId ? b : a;
+  const isConnected = await isMutualConnection(userId, peerId);
+  if (!isConnected) {
+    return res.status(403).json({ message: "Messaging is available only for mutual connections" });
   }
 
   try {
@@ -48,6 +76,18 @@ export const createMessage = async (req: AuthRequest, res: Response) => {
     return res.status(403).json({ message: "Access denied to this room" });
   }
 
+  const a = Number(parts[0]);
+  const b = Number(parts[1]);
+  if (!Number.isInteger(a) || !Number.isInteger(b)) {
+    return res.status(400).json({ message: "Invalid room id" });
+  }
+
+  const peerId = a === senderId ? b : a;
+  const isConnected = await isMutualConnection(senderId || 0, peerId);
+  if (!isConnected) {
+    return res.status(403).json({ message: "Messaging is available only for mutual connections" });
+  }
+
   try {
     const msg = await prisma.message.create({
       data: {
@@ -57,6 +97,24 @@ export const createMessage = async (req: AuthRequest, res: Response) => {
         content,
       },
     });
+
+    const parts = room.split("-");
+    const recipientId = parts.length === 2
+      ? Number(parts[0]) === senderId
+        ? Number(parts[1])
+        : Number(parts[0])
+      : null;
+
+    if (recipientId && Number.isInteger(recipientId)) {
+      await createNotification({
+        userId: recipientId,
+        actorId: senderId,
+        type: "MESSAGE_RECEIVED",
+        targetType: "MESSAGE",
+        targetId: String(msg.id),
+      });
+    }
+
     res.json(msg);
   } catch (error) {
     res.status(500).json({ message: "Failed to save message", error });
@@ -73,6 +131,13 @@ export const getConversationsByUser = async (req: AuthRequest, res: Response) =>
   if (!req.user || req.user.id !== userId) {
     return res.status(403).json({ message: "Access denied" });
   }
+
+  let lastReadTimestamps: Record<string, string> = {};
+  try {
+    if (req.query.lastReadTimestamps) {
+      lastReadTimestamps = JSON.parse(req.query.lastReadTimestamps as string);
+    }
+  } catch { /* ignore malformed JSON */ }
 
   try {
     const messages = await prisma.message.findMany({
@@ -120,10 +185,49 @@ export const getConversationsByUser = async (req: AuthRequest, res: Response) =>
       });
     }
 
+    // Compute unread counts per room
+    const roomUnreadCounts: Record<string, number> = {};
+    for (const row of latestRows) {
+      const lastRead = lastReadTimestamps[row.room];
+      if (lastRead) {
+        const since = new Date(lastRead);
+        const count = await prisma.message.count({
+          where: {
+            room: row.room,
+            senderId: { not: userId },
+            createdAt: { gt: since },
+          },
+        });
+        roomUnreadCounts[row.room] = count;
+      } else {
+        roomUnreadCounts[row.room] = 0;
+      }
+    }
+
     const peerIds = Array.from(new Set(latestRows.map((r) => r.peerId))).filter((id) => Number.isInteger(id));
     if (peerIds.length === 0) {
       return res.json([]);
     }
+
+    const followRows = await prisma.follow.findMany({
+      where: {
+        OR: [
+          { followerId: userId, followingId: { in: peerIds } },
+          { followerId: { in: peerIds }, followingId: userId },
+        ],
+      },
+      select: { followerId: true, followingId: true },
+    });
+
+    const followsFromUser = new Set(
+      followRows.filter((r) => r.followerId === userId).map((r) => r.followingId)
+    );
+    const followsToUser = new Set(
+      followRows.filter((r) => r.followingId === userId).map((r) => r.followerId)
+    );
+    const mutualPeerIds = new Set(
+      peerIds.filter((peerId) => followsFromUser.has(peerId) && followsToUser.has(peerId))
+    );
 
     const peers = await prisma.user.findMany({
       where: { id: { in: peerIds } },
@@ -138,6 +242,7 @@ export const getConversationsByUser = async (req: AuthRequest, res: Response) =>
     const peerMap = new Map(peers.map((p) => [p.id, p]));
 
     const conversations = latestRows
+      .filter((row) => mutualPeerIds.has(row.peerId))
       .map((row) => {
         const peer = peerMap.get(row.peerId);
         if (!peer) return null;
@@ -147,6 +252,7 @@ export const getConversationsByUser = async (req: AuthRequest, res: Response) =>
           latestMessage: row.content,
           latestAt: row.createdAt,
           isOwnLastMessage: row.senderId === userId,
+          unreadCount: roomUnreadCounts[row.room] || 0,
         };
       })
       .filter((c): c is NonNullable<typeof c> => Boolean(c))

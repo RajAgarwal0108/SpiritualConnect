@@ -22,6 +22,8 @@ export default function ConversationItem({
 }: ConversationItemProps) {
   const peer = conversation.peer;
 
+  const unread = conversation.unreadCount || 0;
+
   if (layout === "page") {
     return (
       <motion.button
@@ -52,10 +54,17 @@ export default function ConversationItem({
               <p className={`font-medium text-sm transition-colors truncate ${isSelected ? "text-sacred-gold" : "text-sacred-text"}`}>
                 {peer.name}
               </p>
-              <span className="text-[10px] text-sacred-muted/50 shrink-0">
-                {conversation.latestAt
-                  ? new Date(conversation.latestAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                  : ""}
+              <span className="flex items-center gap-2">
+                {unread > 0 && (
+                  <span className="h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+                <span className="text-[10px] text-sacred-muted/50 shrink-0">
+                  {conversation.latestAt
+                    ? new Date(conversation.latestAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                    : ""}
+                </span>
               </span>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -102,10 +111,17 @@ export default function ConversationItem({
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-baseline mb-1 gap-2">
           <h4 className="font-bold text-sacred-text truncate">{peer.name}</h4>
-          <span className="text-[10px] text-sacred-muted/50 shrink-0">
-            {conversation.latestAt
-              ? new Date(conversation.latestAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              : ""}
+          <span className="flex items-center gap-2">
+            {unread > 0 && (
+              <span className="h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
+            <span className="text-[10px] text-sacred-muted/50 shrink-0">
+              {conversation.latestAt
+                ? new Date(conversation.latestAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : ""}
+            </span>
           </span>
         </div>
         <div className="flex items-center gap-1.5">
