@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Loader2, User, Sparkles } from "lucide-react";
 import { useAuthStore } from "@/store/globalStore";
+import api from "@/services/api";
 import { useChatSocket } from "@/hooks/useChatSocket";
 import { useConversationsList, useOnlineUsers } from "@/hooks/useConversations";
 import { useDMChat } from "@/hooks/useDMChat";
